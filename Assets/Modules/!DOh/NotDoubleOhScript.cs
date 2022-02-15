@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
 
@@ -158,6 +159,7 @@ public class NotDoubleOhScript : MonoBehaviour
 
     private void PhaseOne()
     {
+        TwitchHelpMessage = "Phase 1: !{0} press horiz1 even [Presses horiz1 on an even digit.] | 'press' is optional. Buttons are: horiz1, horiz2, vert1, vert2.";
         _currentPhase = 1;
         _currentPosition = Rnd.Range(0, 64);
         Debug.LogFormat("[Not Double-Oh #{0}] Entering Phase One. Current position: {1}", _moduleId, _grid[_currentPosition]);
@@ -169,17 +171,17 @@ public class NotDoubleOhScript : MonoBehaviour
 
     private void ShuffleSegments()
     {
-        var segShuffs = new bool[2][] { new bool[7], new bool[7] };
-        for (int i = 0; i < 2; i++)
+        var segShuffs = new bool[8][] { new bool[7], new bool[7], new bool[7], new bool[7], new bool[7], new bool[7], new bool[7], new bool[7] };
+        for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 7; j++)
                 segShuffs[i][j] = _segmentConfigs[i][j];
             segShuffs[i].Shuffle();
         }
-        for (int i = 0; i < LeftSegObjs.Length; i++)
+        for (int seg = 0; seg < LeftSegObjs.Length; seg++)
         {
-            LeftSegObjs[i].SetActive(segShuffs[0][i]);
-            RightSegObjs[i].SetActive(segShuffs[1][i]);
+            LeftSegObjs[seg].SetActive(segShuffs[_grid[_currentPosition][0] - 'A'][seg]);
+            RightSegObjs[seg].SetActive(segShuffs[_grid[_currentPosition][1] - 'A'][seg]);
         }
     }
 
@@ -218,6 +220,7 @@ public class NotDoubleOhScript : MonoBehaviour
 
     private void PhaseTwo()
     {
+        TwitchHelpMessage = "Phase 2: !{0} press submit [Presses the submit button.] | 'press' is optional.";
         newPath:
         _currentPhase = 2;
         _currentPosition = Rnd.Range(0, 64);
@@ -274,6 +277,7 @@ public class NotDoubleOhScript : MonoBehaviour
 
     private void PhaseThree()
     {
+        TwitchHelpMessage = "Phase 1: !{0} press horiz1 even [Presses horiz1 on an even digit.] | 'press' is optional. Buttons are: horiz1, horiz2, vert1, vert2.";
         Debug.LogFormat("[Not Double-Oh #{0}] Entering Phase Three. Current position: {1}. Good luck!", _moduleId, _grid[_currentPosition]);
         _currentPhase = 3;
         _posIx = 0;
@@ -293,6 +297,74 @@ public class NotDoubleOhScript : MonoBehaviour
         {
             LeftSegObjs[seg].SetActive(false);
             RightSegObjs[seg].SetActive(false);
+        }
+    }
+
+#pragma warning disable 0414
+    private string TwitchHelpMessage = "Phase 0: !{0} press submit [Presses the submit button.] | 'press' is optional.";
+#pragma warning restore 0414
+
+    private IEnumerator ProcessTwitchCommand(string command)
+    {
+        Match m;
+        if (_currentPhase == 0 || _currentPhase == 2)
+        {
+            m = Regex.Match(command, @"^\s*(press\s+)?submit\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (m.Success)
+            {
+                yield return null;
+                SubmitBtnSel.OnInteract();
+                yield break;
+            }
+            m = Regex.Match(command, @"^\s*(press\s+)?((?<vert1>vert1)|(?<horiz1>horiz1)|(?<horiz2>horiz2)|vert2)\s+((?<even>even)|odd)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (m.Success)
+            {
+                yield return null;
+                yield return "sendtochaterror You can't press an arrowed button at Phase " + _currentPhase + "!";
+                yield break;
+            }
+        }
+        if (_currentPhase == 1 || _currentPhase == 3)
+        {
+            m = Regex.Match(command, @"^\s*(press\s+)?submit\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (m.Success)
+            {
+                yield return null;
+                if (_currentPhase == 3)
+                {
+                    yield return "sendtochaterror You can't press the submit button at Phase 3!";
+                    yield break;
+                }
+                SubmitBtnSel.OnInteract();
+                yield break;
+            }
+            m = Regex.Match(command, @"^\s*(press\s+)?((?<vert1>vert1)|(?<horiz1>horiz1)|(?<horiz2>horiz2)|vert2)\s+((?<even>even)|odd)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (m.Success)
+            {
+                yield return null;
+                var btn = m.Groups["vert1"].Success ? ArrowBtnSels[0] : m.Groups["horiz1"].Success ? ArrowBtnSels[1] : m.Groups["horiz2"].Success ? ArrowBtnSels[2] : ArrowBtnSels[3];
+                var digit = m.Groups["even"].Success ? 0 : 1;
+                while ((int)BombInfo.GetTime() % 2 != digit)
+                    yield return null;
+                btn.OnInteract();
+            }
+        }
+    }
+
+    private IEnumerator TwitchHandleForcedSolve()
+    {
+        yield return null;
+        while (_currentPhase != 3)
+        {
+            SubmitBtnSel.OnInteract();
+            yield return new WaitForSeconds(0.2f);
+        }
+        for (int i = _posIx; i < 7; i++)
+        {
+            while ((int)BombInfo.GetTime() % 2 != _usedDirections[i] / 4)
+                yield return null;
+            ArrowBtnSels[_usedDirections[i] % 4].OnInteract();
+            yield return new WaitForSeconds(0.2f);
         }
     }
 }
