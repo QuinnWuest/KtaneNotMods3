@@ -95,6 +95,7 @@ GameObject:
   - component: {fileID: 114016187932387902}
   - component: {fileID: 114388467645891330}
   - component: {fileID: 114292188320627996}
+  - component: {fileID: 114335168824402266}
   m_Layer: 0
   m_Name: '!DOh'
   m_TagString: Untagged
@@ -2702,6 +2703,7 @@ MonoBehaviour:
   Module: {fileID: 114072012157303360}
   BombInfo: {fileID: 114016187932387902}
   Audio: {fileID: 114388467645891330}
+  RuleSeedable: {fileID: 114335168824402266}
   ArrowBtnSels:
   - {fileID: 114797628444242274}
   - {fileID: 114756792850157126}
@@ -2737,6 +2739,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - Legacy Shaders/Diffuse
+--- !u!114 &114335168824402266
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1140790499701366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf69c2de51bd3c43bbd9bc22578ee08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _seed: 1
 --- !u!114 &114354518321288220
 MonoBehaviour:
   m_ObjectHideFlags: 1
