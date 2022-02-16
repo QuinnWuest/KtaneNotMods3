@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1">
+        <title>Not Perspective Pegs — Keep Talking and Nobody Explodes Module</title>
+        <link rel="stylesheet" type="text/css" href="css/font.css">
+        <link rel="stylesheet" type="text/css" href="css/normalize.css">
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+        <script src="js/ktane-utils.js"></script>
+        <script src='js/ruleseed.js'></script>
+        <style>
+        .dark table, table {
+            border: none;
+        }
+        .dark td img {
+            filter: invert(87%);
+        }
+		.color-diagram {
+			float: right;
+			clear: right;
+		}
+		.color-diagram table {
+            width: 145px;
+			text-align: center;
+			margin-left: 0.7cm;
+        }
+        </style>
+    </head>
+<body>
+    <div class="section">
+        <div class="page page-bg-02">
+            <div class="page-header">
+                <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+                <span class="page-header-section-title">Not Perspective Pegs</span>
+            </div>
+            <div class="page-content">
+                <img src="img/Component/Perspective Pegs.svg" class="diagram comp-diag">
+                <h2>On the Subject of Not Perspective Pegs</h2>
+                <p class="flavour-text">Everything is different from the pegging of another. Wait, what?</p>
+				<div class="color-diagram">
+				<table>
+				<tr><th colspan='4'>Color Table</th></tr>
+				<tr><td>Blue</td></tr>
+				<tr><td>Green</td></tr>
+				<tr><td>Purple</td></tr>
+				<tr><td>Red</td></tr>
+				<tr><td>Yellow</td></tr>
+				</table>
+				</div>
+                <p>A Not Perspective Pegs module will initially appear with all the pegs sunken into the module. Press any peg to raised the pegs and activate the module.</p>
+				<p>The pegs will each have five colored faces, all with different colors per peg. Across all the pegs, five of the colored faces will flash.</p>
+				<p>Each of the flashes will define a position in a 3-digit base-5 values. These values will be lettered A-E in the order that they flash.</p>
+				<ul>
+				<li>For the most significant digit, take the 0-indexed position of the peg it flashed on, starting from the top, and going clockwise.</li>
+				<li>For the middle significant digit, take the 0-indexed position of the perspective it flashed from, starting from the top, and going clockwise.</li>
+				<li>For the least significant digit, take the 0-indexed position of the color in the <em>Color Table</em>, from top to bottom.</li>
+				</ul>
+            </div>
+            <div class="page-footer relative-footer">Page 1 of 1</div>
+        </div>
+        </div>
+    </body>
+</html>
