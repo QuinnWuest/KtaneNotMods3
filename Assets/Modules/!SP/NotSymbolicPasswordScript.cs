@@ -55,6 +55,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
             _imageGrid[i] = remainingImgs[ix];
             remainingImgs.RemoveAt(ix);
         }
+        Debug.LogFormat("[Not Symbolic Password #{0}] Using rule seed {1}.", _moduleId, rnd.Seed);
         Generate();
     }
 
