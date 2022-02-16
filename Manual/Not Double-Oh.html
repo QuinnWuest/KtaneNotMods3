@@ -34,7 +34,7 @@
             border: none;
         }
         .dark td img {
-            filter: invert(90%);
+            filter: invert(87%);
         }
         .not-double-oh {
             text-align: center;
@@ -59,7 +59,21 @@
         table.not-double-oh td:nth-child(1) {
             border-left: 1.5mm solid;
         }
-		
+		.segment-diagram {
+			float: right;
+			clear: right;
+		}
+		.segment-diagram table {
+            width: 100%;
+			text-align: center;
+        }
+		.segment-diagram table img {
+            width: 30px;
+        }
+		.whitespace {
+			float: right;
+			clear: right;
+		}
         </style>
     </head>
 <body>
@@ -70,10 +84,34 @@
                 <span class="page-header-section-title">Not Double-Oh</span>
             </div>
             <div class="page-content">
-                <img src="img/Component/Not Double-Oh.svg" class="diagram">
+                <img src="img/Component/Not Double-Oh.svg" class="diagram comp-diag">
                 <h2>On the Subject of Not Double-Oh</h2>
                 <p class="flavour-text">Stirred, not shaken. Hang on...</p>
                 <div style="font-size: 10pt;">
+				<div class="whitespace">
+				<table>
+				<tr><td style="border: none; height: 2.7cm;"></td></tr>
+				</table>
+				</div>
+				<div class="segment-diagram">
+				<table>
+				<tr>
+					<th colspan='4'>Segment Appendix</th>
+				</tr>
+				<tr>
+					<td><img src="img/Not Double-Oh/SegA.svg"></td>
+					<td><img src="img/Not Double-Oh/SegB.svg"></td>
+					<td><img src="img/Not Double-Oh/SegC.svg"></td>
+					<td><img src="img/Not Double-Oh/SegD.svg"></td>
+				</tr>
+				<tr>
+					<td><img src="img/Not Double-Oh/SegE.svg"></td>
+					<td><img src="img/Not Double-Oh/SegF.svg"></td>
+					<td><img src="img/Not Double-Oh/SegG.svg"></td>
+					<td><img src="img/Not Double-Oh/SegH.svg"></td>
+				</tr>
+				</table>
+				</div>
                 <p>A Not Double-Oh module has four arrow buttons, a submit button, and a display which will initially appear blank. Pressing the submit button will activate the module.</p>
                 <p>The display will then light up, and show a two-letter pair of letters A-H, representing a position in the table below. However, the segments's positions have been shuffled, and display nonsense rather than letters.</p>
                 <p>The four arrowed buttons have two functions each, based on whether the last digit of the timer is even or odd. These functions will move you around in the table below, however their functions have also been shuffled. These functions include:</p>

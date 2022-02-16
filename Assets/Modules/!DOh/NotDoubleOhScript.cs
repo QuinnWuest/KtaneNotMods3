@@ -66,7 +66,8 @@ public class NotDoubleOhScript : MonoBehaviour
         for (int i = 0; i < _grid.Length; i++)
             _grid[i] = "ABCDEFGH".Substring(i / 8, 1) + "ABCDEFGH".Substring(i % 8, 1);
         rnd.ShuffleFisherYates(_grid);
-        Debug.LogFormat("[Not Double-Oh #{0}] Using ruleseed {1}. Grid: {2}", _moduleId, rnd.Seed, _grid.Join(" "));
+        if (rnd.Seed != 1)
+            Debug.LogFormat("[Not Double-Oh #{0}] Using ruleseed {1}.", _moduleId, rnd.Seed);
 
         for (int i = 0; i < LeftSegObjs.Length; i++)
         {

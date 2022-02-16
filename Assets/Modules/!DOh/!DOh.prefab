@@ -2522,7 +2522,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ModuleType: NotDoubleOhModule
   ModuleDisplayName: Not Double-Oh
-  RequiresTimerVisibility: 0
+  RequiresTimerVisibility: 1
 --- !u!114 &114090933145122094
 MonoBehaviour:
   m_ObjectHideFlags: 1
