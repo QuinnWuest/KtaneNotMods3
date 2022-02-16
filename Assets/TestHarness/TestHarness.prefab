@@ -20165,6 +20165,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: a87bc7fd49dd93d4192dde65da574236, type: 3}
   - {fileID: 8300000, guid: 92c215a8accd3954992ac527842b1876, type: 3}
   - {fileID: 8300000, guid: a45b0a982b146d74c9e32a2a9ea689e6, type: 3}
+  - {fileID: 8300000, guid: 8f386640086fe8f4c937d78d409c76ca, type: 3}
+  - {fileID: 8300000, guid: 0cb3289bfc2421a4d879dd34959dee5c, type: 3}
   StrikeCount: 100
   TimeLimit: 6000
   BombSize: 1
