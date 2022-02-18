@@ -150,7 +150,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1119072896483766
 GameObject:
   m_ObjectHideFlags: 1
@@ -415,7 +415,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1463525751183826
 GameObject:
   m_ObjectHideFlags: 0
@@ -448,7 +448,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1500464701397210
 GameObject:
   m_ObjectHideFlags: 1
@@ -594,7 +594,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1605395238313404
 GameObject:
   m_ObjectHideFlags: 1
@@ -750,6 +750,7 @@ GameObject:
   - component: {fileID: 114873764119103640}
   - component: {fileID: 114495135287197840}
   - component: {fileID: 114103799983651840}
+  - component: {fileID: 114127874259964352}
   - component: {fileID: 114926266942931794}
   m_Layer: 0
   m_Name: '!CS'
@@ -958,7 +959,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1996966449845854
 GameObject:
   m_ObjectHideFlags: 1
@@ -3260,7 +3261,7 @@ TextMesh:
   m_FontSize: 42
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 12800000, guid: 53bc80e932481984d9e3e65628f47a3b, type: 3}
+  m_Font: {fileID: 12800000, guid: 3c66743abb1587d4382baf720f1dd757, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4280952355
@@ -3281,7 +3282,7 @@ TextMesh:
   m_FontSize: 42
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 12800000, guid: 53bc80e932481984d9e3e65628f47a3b, type: 3}
+  m_Font: {fileID: 12800000, guid: 3c66743abb1587d4382baf720f1dd757, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4280952355
@@ -3302,7 +3303,7 @@ TextMesh:
   m_FontSize: 42
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 12800000, guid: 53bc80e932481984d9e3e65628f47a3b, type: 3}
+  m_Font: {fileID: 12800000, guid: 3c66743abb1587d4382baf720f1dd757, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4280952355
@@ -3323,7 +3324,7 @@ TextMesh:
   m_FontSize: 42
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 12800000, guid: 53bc80e932481984d9e3e65628f47a3b, type: 3}
+  m_Font: {fileID: 12800000, guid: 3c66743abb1587d4382baf720f1dd757, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4280952355
@@ -3344,7 +3345,7 @@ TextMesh:
   m_FontSize: 42
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 12800000, guid: 53bc80e932481984d9e3e65628f47a3b, type: 3}
+  m_Font: {fileID: 12800000, guid: 3c66743abb1587d4382baf720f1dd757, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4280952355
@@ -3433,6 +3434,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   HighlightScale: {x: 1, y: 1, z: 1}
   OutlineAmount: 0
+--- !u!114 &114127874259964352
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1847645297682336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1cfb889a07d5fd4e9baed7960bb397f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _colorblindMode: 0
 --- !u!114 &114129366359202364
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3987,6 +4000,7 @@ MonoBehaviour:
   Module: {fileID: 114940556277579064}
   BombInfo: {fileID: 114495135287197840}
   Audio: {fileID: 114103799983651840}
+  ColorblindMode: {fileID: 114127874259964352}
   SwitchSels:
   - {fileID: 114676209922520506}
   - {fileID: 114038172682584186}
@@ -4005,9 +4019,23 @@ MonoBehaviour:
   - {fileID: 1012331158470116}
   - {fileID: 1766694824703158}
   - {fileID: 1962138551565442}
+  LedBottomObjs:
+  - {fileID: 1669012884278412}
+  - {fileID: 1134098466025512}
+  - {fileID: 1567237248224766}
+  - {fileID: 1933592220685850}
+  - {fileID: 1978890760916508}
   LedMats:
   - {fileID: 2100000, guid: 374a6b9536955744fb04031a2fa9ab01, type: 2}
   - {fileID: 2100000, guid: 24237389da6d3bc4a8ea65ee859a025e, type: 2}
+  - {fileID: 2100000, guid: e53ab4fb577e0b345aa1b81ad9bc27dd, type: 2}
+  - {fileID: 2100000, guid: c9061790c0b136546b45b9f8cbb74b06, type: 2}
+  ColorblindText:
+  - {fileID: 102660630358059966}
+  - {fileID: 102243857558686604}
+  - {fileID: 102078124633573562}
+  - {fileID: 102338386120081390}
+  - {fileID: 102513704782815044}
 --- !u!114 &114940556277579064
 MonoBehaviour:
   m_ObjectHideFlags: 1
