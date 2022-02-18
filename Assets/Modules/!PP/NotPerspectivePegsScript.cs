@@ -78,11 +78,11 @@ public class NotPerspectivePegsScript : MonoBehaviour
             _flashPegPerspective[i] = Rnd.Range(0, 5);
             _flashPegColor[i] = _pegColors[_flashPegPosition[i] * 5 + _flashPegPerspective[i]];
             _flashPegColorIx[i] = _flashPegPosition[i] * 5 + _flashPegPerspective[i];
-            _pegAnswers[i] = _quinaryLogicResults[(_flashPegPosition[i] + (5 - i)) % 5][(_flashPegPerspective[i] + (5 - i)) % 5][_flashPegColor[i]];
+            _pegAnswers[i] = (_quinaryLogicResults[(_flashPegPosition[i] + (5 - i)) % 5][(_flashPegPerspective[i] + (5 - i)) % 5][_flashPegColor[i]] + i) % 5;
             Debug.LogFormat("[Not Perspective Pegs #{0}] Stage {1}.", _moduleId, i + 1);
             Debug.LogFormat("[Not Perspective Pegs #{0}] Without offset: Position {1}, Perspective {2}, Color {3}", _moduleId, _flashPegPosition[i], _flashPegPerspective[i], _colorNames[_flashPegColor[i]]);
             Debug.LogFormat("[Not Perspective Pegs #{0}] With offset: Position {1}, Perspective {2}, Color {3}", _moduleId, (_flashPegPosition[i] + (5 - i)) % 5, (_flashPegPerspective[i] + (5 - i)) % 5, _colorNames[_flashPegColor[i]]);
-            Debug.LogFormat("[Not Perspective Pegs #{0}] Resulting peg: {1}", _moduleId, _pegAnswers[i]);
+            Debug.LogFormat("[Not Perspective Pegs #{0}] Resulting peg, with offset: {1}", _moduleId, _pegAnswers[i]);
         }
     }
 
@@ -134,6 +134,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
                 Module.HandleStrike();
                 Debug.LogFormat("[Not Perspective Pegs #{0}] Pressed peg {1} when peg {2} was expected. Strike.", _moduleId, peg, _pegAnswers[_pressIx]);
                 _pressIx = 0;
+                _flashSequence = StartCoroutine(FlashSequence());
             }
             if (_pressIx == _currentStage + 1)
             {
