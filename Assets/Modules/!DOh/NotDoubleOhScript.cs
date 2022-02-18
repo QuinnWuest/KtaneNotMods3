@@ -362,7 +362,7 @@ public class NotDoubleOhScript : MonoBehaviour
         for (int i = _posIx; i < 7; i++)
         {
             while ((int)BombInfo.GetTime() % 2 != _usedDirections[i] / 4)
-                yield return null;
+                yield return true;
             ArrowBtnSels[_usedDirections[i] % 4].OnInteract();
             yield return new WaitForSeconds(0.2f);
         }
