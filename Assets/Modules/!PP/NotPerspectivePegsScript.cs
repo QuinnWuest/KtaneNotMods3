@@ -118,6 +118,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
                 return false;
 
             // Regular peg pressing
+            PegSels[peg].AddInteractionPunch(0.5f);
             Audio.PlaySoundAtTransform(_flashSounds[peg], PegSels[peg].transform);
             if (_flashSequence != null)
                 StopCoroutine(_flashSequence);
