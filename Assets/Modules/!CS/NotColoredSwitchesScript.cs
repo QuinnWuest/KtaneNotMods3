@@ -23,8 +23,37 @@ public class NotColoredSwitchesScript : MonoBehaviour
 
     private static readonly Color[] _matColors = "c61e1e|21c032|2543ff|ffad0b|b91edb|53d3ff".Split('|').Select(str => new Color(Convert.ToInt32(str.Substring(0, 2), 16) / 255f, Convert.ToInt32(str.Substring(2, 2), 16) / 255f, Convert.ToInt32(str.Substring(4, 2), 16) / 255f)).ToArray();
     private static readonly string[] _colorNames = new string[6] { "RED", "GREEN", "BLUE", "ORANGE", "PURPLE", "TURQUOISE" };
+    private static readonly string[] _wordList = new string[] { "ADJUST", "ANCHOR", "BOWTIE", "BUTTON", "CIPHER", "CORNER", "DAMPEN", "DEMOTE", "ENLIST", "EVOLVE", "FORGET", "FINISH", "GEYSER", "GLOBAL", "HAMMER", "HELIUM", "IGNITE", "INDIGO", "JIGSAW", "JULIET", "KARATE", "KEYPAD", "LAMBDA", "LISTEN", "MATTER", "MEMORY", "NEBULA", "NICKEL", "OVERDO", "OXYGEN", "PEANUT", "PHOTON", "QUARTZ", "QUEBEC", "RESIST", "RIDDLE", "SIERRA", "STRIKE", "TEAPOT", "TWENTY", "UNTOLD", "ULTIMA", "VICTOR", "VIOLET", "WITHER", "WRENCH", "XENONS", "XYLOSE", "YELLOW", "YOGURT", "ZENITH", "ZODIAC" };
 
-    private static readonly string[] _morseInfo = new string[26] { ".-", "-...", "-.-.", "-..", ".", "..-.", "--,", "....", "..", ".---", "-.-", ".-..", "--", "-.", "---", ".--.", "--.-", ".-.", "...", "-", "..-", "...-", ".--", "-..-", "-.--", "--.." };
+    private static readonly int[][] _marqueeInfo = new int[26][]
+    {
+        new int[5] { 14, 17, 31, 17, 17 },
+        new int[5] { 30, 17, 30, 17, 30 },
+        new int[5] { 14, 17, 16, 17, 14 },
+        new int[5] { 30, 17, 17, 17, 30 },
+        new int[5] { 31, 16, 31, 16, 31 },
+        new int[5] { 31, 16, 31, 16, 16 },
+        new int[5] { 14, 16, 23, 17, 14 },
+        new int[5] { 17, 17, 31, 17, 17 },
+        new int[5] { 31, 4, 4, 4, 31 },
+        new int[5] { 31, 2, 2, 2, 12 },
+        new int[5] { 17, 18, 28, 18, 17 },
+        new int[5] { 16, 16, 16, 16, 31 },
+        new int[5] { 17, 27, 21, 17, 17 },
+        new int[5] { 17, 15, 21, 19, 17 },
+        new int[5] { 14, 17, 17, 17, 14 },
+        new int[5] { 30, 17, 30, 16, 16 },
+        new int[5] { 14, 17, 21, 18, 13 },
+        new int[5] { 30, 17, 30, 17, 17 },
+        new int[5] { 15, 16, 14, 1, 30 },
+        new int[5] { 31, 4, 4, 4, 4 },
+        new int[5] { 17, 17, 17, 17, 14 },
+        new int[5] { 17, 17, 10, 10, 4 },
+        new int[5] { 17, 17, 21, 27, 17 },
+        new int[5] { 17, 10, 4, 10, 17 },
+        new int[5] { 17, 10, 4, 4, 4 },
+        new int[5] { 31, 2, 4, 8, 31 }
+    };
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
@@ -35,14 +64,17 @@ public class NotColoredSwitchesScript : MonoBehaviour
     private bool[] _switchStates = new bool[5];
     private Coroutine[] _flipSwitch = new Coroutine[5];
 
+    private string _chosenWord;
     private int _chosenLetter;
-    private int[][] _otherLetters = new int[5][] { new int[5], new int[5], new int[5], new int[5], new int[5] };
-    private int[][] _otherCipheredLetters = new int[5][] { new int[5], new int[5], new int[5], new int[5], new int[5] };
+    private int[] _otherLetters = new int[5];
+    private int[] _otherCipheredLetters = new int[5];
+
+
     private int[] _switchColors = new int[5];
     private int? _mostRecentSwitch;
 
-    private Coroutine[] _flashMorse = new Coroutine[5];
     private bool _colorblindMode;
+    private Coroutine _showMarquee;
 
     private void Start()
     {
@@ -60,20 +92,20 @@ public class NotColoredSwitchesScript : MonoBehaviour
         }
         if (_switchColors.Distinct().Count() != 5)
             goto newColors;
-        var shuff = Enumerable.Range(0, 26).ToArray().Shuffle();
-        _chosenLetter = shuff[25];
+        _chosenWord = _wordList[Rnd.Range(0, _wordList.Length)];
+        var shuff = Enumerable.Range(0, 6).ToArray().Shuffle();
+        _chosenLetter = _chosenWord[shuff[5]] - 'A';
         for (int i = 0; i < 5; i++)
         {
-            for (int j = 0; j < 5; j++)
-            {
-                _otherLetters[i][j] = shuff[i * 5 + j];
-                _otherCipheredLetters[i][j] = Cipher(shuff[i * 5 + j], _switchColors[i], i);
-            }
+            _otherLetters[i] = _chosenWord[shuff[i]] - 'A';
+            _otherCipheredLetters[i] = Cipher(_otherLetters[i], _switchColors[i], i);
         }
+        Debug.LogFormat("[Not Colored Switches #{0}] Chosen word: {1}", _moduleId, _chosenWord);
         Debug.LogFormat("[Not Colored Switches #{0}] Chosen letter: {1}", _moduleId, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[_chosenLetter]);
-        Debug.LogFormat("[Not Colored Switches #{0}] Remaining letters: {1}", _moduleId, _otherLetters.Select(i => i.Select(j => "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[j].ToString()).Join("")).Join(" "));
+        Debug.LogFormat("[Not Colored Switches #{0}] Remaining letters: {1}", _moduleId, _otherLetters.Select(i => "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i]).Join());
         Debug.LogFormat("[Not Colored Switches #{0}] Switch colors: {1}.", _moduleId, _switchColors.Select(i => _colorNames[i]).Join(", "));
-        Debug.LogFormat("[Not Colored Switches #{0}] Remaining letters, ciphered: {1}", _moduleId, _otherCipheredLetters.Select(i => i.Select(j => "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[j].ToString()).Join("")).Join(" "));
+        Debug.LogFormat("[Not Colored Switches #{0}] Remaining letters, ciphered: {1}", _moduleId, _otherCipheredLetters.Select(i => "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i]).Join());
+        Debug.Log(IntToBinary(_marqueeInfo[_otherCipheredLetters[0]][0]).Join(""));
     }
 
     private void SetColorblindMode(bool mode)
@@ -91,6 +123,8 @@ public class NotColoredSwitchesScript : MonoBehaviour
             Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, SwitchSels[sw].transform);
             _switchStates[sw] = !_switchStates[sw];
             _flipSwitch[sw] = StartCoroutine(FlipSwitch(sw));
+            if (_showMarquee != null)
+                StopCoroutine(_showMarquee);
             int upCount = 0;
             for (int i = 0; i < 5; i++)
             {
@@ -148,18 +182,14 @@ public class NotColoredSwitchesScript : MonoBehaviour
             }
             else if (upCount == 1)
             {
+                _showMarquee = StartCoroutine(ShowMarquee(_otherCipheredLetters[sw]));
                 for (int i = 0; i < 5; i++)
-                {
-                    _flashMorse[i] = StartCoroutine(FlashMorse(_otherCipheredLetters[sw][i], i));
                     LedBottomObjs[i].GetComponent<MeshRenderer>().material = LedMats[2];
-                }
             }
             else
             {
                 for (int j = 0; j < 5; j++)
                 {
-                    if (_flashMorse[j] != null)
-                        StopCoroutine(_flashMorse[j]);
                     LedTopObjs[j].GetComponent<MeshRenderer>().material = LedMats[0];
                     LedBottomObjs[j].GetComponent<MeshRenderer>().material = LedMats[1];
                 }
@@ -190,19 +220,26 @@ public class NotColoredSwitchesScript : MonoBehaviour
         _isAnimating[sw] = false;
     }
 
-    private IEnumerator FlashMorse(int input, int pos)
+    private IEnumerator ShowMarquee(int num)
     {
         while (true)
         {
-            for (int i = 0; i < _morseInfo[input].Length; i++)
+            for (int i = 0; i < 5; i++)
             {
-                LedTopObjs[pos].GetComponent<MeshRenderer>().material = LedMats[1];
-                yield return new WaitForSeconds(_morseInfo[input][i].ToString() == "." ? 0.2f : 0.6f);
-                LedTopObjs[pos].GetComponent<MeshRenderer>().material = LedMats[0];
-                yield return new WaitForSeconds(0.2f);
+                var bin = IntToBinary(_marqueeInfo[num][i]);
+                for (int j = 0; j < 5; j++)
+                    LedTopObjs[j].GetComponent<MeshRenderer>().material = bin[j] ? LedMats[1] : LedMats[0];
+                yield return new WaitForSeconds(0.3f);
             }
-            yield return new WaitForSeconds(0.4f);
+            for (int j = 0; j < 5; j++)
+                LedTopObjs[j].GetComponent<MeshRenderer>().material = LedMats[0];
+            yield return new WaitForSeconds(0.6f);
         }
+    }
+
+    private bool[] IntToBinary(int num)
+    {
+        return int.Parse(Convert.ToString(num, 2)).ToString("00000").Select(i => i != '0').ToArray();
     }
 
     private int Cipher(int input, int color, int pos)
@@ -303,7 +340,7 @@ public class NotColoredSwitchesScript : MonoBehaviour
             while (_isAnimating[1])
                 yield return null;
         }
-        var goalBin = int.Parse(Convert.ToString(_chosenLetter, 2)).ToString("00000").Select(i => i != '0').ToArray();
+        var goalBin = IntToBinary(_chosenLetter);
         for (int j = 0; j < 2; j++)
         {
             for (int i = 0; i < 5; i++)
