@@ -191,7 +191,8 @@ public class NotSymbolicPasswordScript : MonoBehaviour
             {
                 if (i / 6 >= obj + 1)
                 {
-                    Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonRelease, transform);
+                    if (i % 6 == 0)
+                        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonRelease, transform);
                     if (_currentStage != 3)
                         SymbolObjs[obj].GetComponent<MeshRenderer>().material = SymbolMats[_imageGrid[_currentPosition[obj]]];
                     else
