@@ -105,7 +105,6 @@ public class NotColoredSwitchesScript : MonoBehaviour
         Debug.LogFormat("[Not Colored Switches #{0}] Remaining letters: {1}", _moduleId, _otherLetters.Select(i => "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i]).Join());
         Debug.LogFormat("[Not Colored Switches #{0}] Switch colors: {1}.", _moduleId, _switchColors.Select(i => _colorNames[i]).Join(", "));
         Debug.LogFormat("[Not Colored Switches #{0}] Remaining letters, ciphered: {1}", _moduleId, _otherCipheredLetters.Select(i => "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i]).Join());
-        Debug.Log(IntToBinary(_marqueeInfo[_otherCipheredLetters[0]][0]).Join(""));
     }
 
     private void SetColorblindMode(bool mode)
