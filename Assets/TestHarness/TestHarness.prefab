@@ -20159,21 +20159,29 @@ MonoBehaviour:
   HighlightPrefab: {fileID: 100000, guid: d78a484c6e87f1b47b6596ac080fe942, type: 2}
   AudioVolume: 0.25
   AudioClips:
-  - {fileID: 8300000, guid: 6ffdab7851b6f6a46886fecc6d3b4049, type: 3}
-  - {fileID: 8300000, guid: bdb50327975a5884893987389188b21c, type: 3}
-  - {fileID: 8300000, guid: 7ab67cba0446e294baa154a7cfcec496, type: 3}
-  - {fileID: 8300000, guid: a87bc7fd49dd93d4192dde65da574236, type: 3}
-  - {fileID: 8300000, guid: 92c215a8accd3954992ac527842b1876, type: 3}
-  - {fileID: 8300000, guid: a45b0a982b146d74c9e32a2a9ea689e6, type: 3}
-  - {fileID: 8300000, guid: 8f386640086fe8f4c937d78d409c76ca, type: 3}
-  - {fileID: 8300000, guid: 0cb3289bfc2421a4d879dd34959dee5c, type: 3}
-  - {fileID: 8300000, guid: 677999b0830237240ba0dfa549ea6433, type: 3}
-  - {fileID: 8300000, guid: c61b016bc311475458e8bcbe58f657e2, type: 3}
-  - {fileID: 8300000, guid: 65124f79e9a8e6d4c9aa42c6f2feac32, type: 3}
-  - {fileID: 8300000, guid: 01ca30b8cefbcd840889cdb3255c6d2a, type: 3}
-  - {fileID: 8300000, guid: a5e4dc7639d3d6b4baf0a23210df0e90, type: 3}
-  StrikeCount: 100
-  TimeLimit: 6000
+  - {fileID: 8300000, guid: 8c0ebb3ced6b3af4788e282e3d7daf7e, type: 3}
+  - {fileID: 8300000, guid: b1545b51baaf5e645b358898b8026e75, type: 3}
+  - {fileID: 8300000, guid: 6e23201ae5ce14e4394c8601bcf96c72, type: 3}
+  - {fileID: 8300000, guid: bc6721d6a8c1d5f4fb6e81cb39f137d0, type: 3}
+  - {fileID: 8300000, guid: 2674dd82eb097c044b8e1ca744a70576, type: 3}
+  - {fileID: 8300000, guid: ebc74d0eed8c4934a840763ea6c533d4, type: 3}
+  - {fileID: 8300000, guid: c2d42e32215b1f34c90e5ed965a0ec58, type: 3}
+  - {fileID: 8300000, guid: ca3425ab1bc8e4649b44aee69bfe392c, type: 3}
+  - {fileID: 8300000, guid: 3a0bc55781c8c61409580ccc6b089df1, type: 3}
+  - {fileID: 8300000, guid: 3379ca5b3eb75224db28384937a33d0a, type: 3}
+  - {fileID: 8300000, guid: aab8ab4be8185a34bb0835c200f70e3f, type: 3}
+  - {fileID: 8300000, guid: 438fe19e07718174f89aaa0f5c08451e, type: 3}
+  - {fileID: 8300000, guid: 3d68a5b1a6f127241a65bd269e2f58e6, type: 3}
+  - {fileID: 8300000, guid: f92a401b138f4dc4ea0d092dc682cc59, type: 3}
+  - {fileID: 8300000, guid: 9e9fc4e43440af54bab9b29c52f787dd, type: 3}
+  - {fileID: 8300000, guid: 2e6f660c42f7f794d89e840c60ce0768, type: 3}
+  - {fileID: 8300000, guid: 5452add577c78da49b5972ff98e7f738, type: 3}
+  - {fileID: 8300000, guid: f97c217e907b9a74db3be100003e239c, type: 3}
+  - {fileID: 8300000, guid: 68d0fcb9b8e12574482462469b18f9f3, type: 3}
+  - {fileID: 8300000, guid: a1b6194eee478c845935afaa12137f79, type: 3}
+  - {fileID: 8300000, guid: b54bf78fb380394419ee503d8c257602, type: 3}
+  StrikeCount: 3
+  TimeLimit: 600
   BombSize: 1
   FrontFaceOnly: 1
   EdgeworkConfiguration: {fileID: 0}
