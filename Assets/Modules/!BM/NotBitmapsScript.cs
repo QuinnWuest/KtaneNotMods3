@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using KModkit;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
 
@@ -18,8 +17,8 @@ public class NotBitmapsScript : MonoBehaviour
     public KMSelectable[] ButtonSels;
     public MeshRenderer Bitmap;
 
-    private const int _bitmapSize = 4;
-    private List<bool[][]> _bitmaps = new List<bool[][]>();
+    private const int _numBitmaps = 4;
+    private BitmapInfo[] _bitmaps;
     private int _bitmapIx;
 
     private int _moduleId;
@@ -32,33 +31,95 @@ public class NotBitmapsScript : MonoBehaviour
     private static readonly Color[] _darkColors = new[] { new Color(.75f, .5f, .5f), new Color(.5f, .75f, .5f), new Color(.5f, .5f, .75f), new Color(.75f, .75f, .5f), new Color(.5f, .75f, .75f), new Color(.75f, .5f, .75f) };
     private static readonly string[] _colorNames = new string[] { "red", "green", "blue", "yellow", "cyan", "magenta" };
 
-    private Texture[] _bitmapTextures = new Texture[_bitmapSize];
-    private int[] _colorIxs = new int[_bitmapSize];
-    private bool[] _hasBeenSatisfied = new bool[_bitmapSize];
-    
+    private readonly Texture[] _bitmapTextures = new Texture[_numBitmaps];
+    private int[] _colorIxs;
+    private readonly bool[] _hasBeenSatisfied = new bool[_numBitmaps];
+
+    private static readonly bool[][] _fixedBitmaps = new string[]
+    {
+        "0111010001100011000101110",
+        "0111011111111111111101110",
+        "0101010101010101010101010",
+        "0101011111011101111101010",
+        "0010001010010101000111111",
+        "0010001010100010101000100",
+        "0010001110111110111000100",
+        "1111110001100011000111111",
+        "1111111111110111111111111",
+        "1111110001010100101000100",
+        "1111111111011100111000100",
+        "0111011011100011101101110"
+    }
+        .Select(sa => sa.Select(ch => ch == '0').ToArray()).ToArray();
+
+    struct BitmapInfo
+    {
+        public bool[] Pixels;
+        public int CenterX;
+        public int CenterY;
+        public int Which;
+    }
+
     void Start()
     {
         _moduleId = _moduleIdCounter++;
         for (int i = 0; i < ButtonSels.Length; i++)
             ButtonSels[i].OnInteract += ButtonPress(i);
 
-        _colorIxs = Enumerable.Range(0, _lightColors.Length).ToArray().Shuffle().Take(_bitmapSize).ToArray();
-        for (int k = 0; k < _bitmapSize; k++)
-        {
-            _bitmaps.Add(new bool[8][]);
-            for (int j = 0; j < 8; j++)
-            {
-                _bitmaps[k][j] = new bool[8];
-                for (int i = 0; i < 8; i++)
-                    _bitmaps[k][j][i] = Rnd.Range(0, 2) == 0;
-            }
-        }
+        _colorIxs = Enumerable.Range(0, _lightColors.Length).ToArray().Shuffle().Take(_numBitmaps).ToArray();
+        _bitmaps = new BitmapInfo[4];
+        var rnd = new System.Random(Rnd.Range(0, int.MaxValue));
+        for (int k = 0; k < _numBitmaps; k++)
+            _bitmaps[k] = generateRandomBitmap(rnd);
 
         for (int i = 0; i < _bitmapTextures.Length; i++)
             _bitmapTextures[i] = GenTexture(i);
 
         Bitmap.material.shader = Shader.Find("Unlit/Transparent");
         _cycleBitmaps = StartCoroutine(CycleBitmaps());
+    }
+
+    private BitmapInfo generateRandomBitmap(System.Random rnd)
+    {
+        var grid = new bool?[64];
+        var which = rnd.Next(0, _fixedBitmaps.Length);
+        var fx = rnd.Next(0, 4);
+        var fy = rnd.Next(0, 4);
+        for (var x = 0; x < 5; x++)
+            for (var y = 0; y < 5; y++)
+                grid[x + fx + 8 * (y + fy)] = _fixedBitmaps[which][x + 5 * y];
+        return new BitmapInfo
+        {
+            Pixels = generateRandomBitmapRecurse(rnd, grid),
+            Which = which,
+            CenterX = fx + 2,
+            CenterY = fy + 2
+        };
+    }
+
+    private bool[] generateRandomBitmapRecurse(System.Random rnd, bool?[] grid)
+    {
+        var px = grid.IndexOf(b => b == null);
+        if (px == -1)
+            return grid.Select(b => b.Value).ToArray();
+        var rv = rnd.Next(0, 2);
+
+        for (var iv = 0; iv < 2; iv++)
+        {
+            grid[px] = ((iv + rv) % 2) != 0;
+            if (px % 8 >= 4 && px / 8 >= 4)
+            {
+                // Check that the subbitmap just completed is not one of the fixed ones
+                var subbitmap = Enumerable.Range(0, 25).Select(i => grid[(i % 5) + (px % 8 - 4) + 8 * ((i / 5) + (px / 8 - 4))].Value).ToArray();
+                if (_fixedBitmaps.Any(fb => fb.SequenceEqual(subbitmap)))
+                    continue;
+            }
+            var subresult = generateRandomBitmapRecurse(rnd, grid);
+            if (subresult != null)
+                return subresult;
+        }
+        grid[px] = null;
+        return null;
     }
 
     private KMSelectable.OnInteractHandler ButtonPress(int btn)
@@ -89,7 +150,7 @@ public class NotBitmapsScript : MonoBehaviour
     {
         while (true)
         {
-            for (_bitmapIx = 0; _bitmapIx < _bitmaps.Count; _bitmapIx++)
+            for (_bitmapIx = 0; _bitmapIx < _bitmaps.Length; _bitmapIx++)
             {
                 if (_hasBeenSatisfied[_bitmapIx])
                 {
@@ -104,7 +165,7 @@ public class NotBitmapsScript : MonoBehaviour
 
     private Texture GenTexture(int bmIx)
     {
-        // Texture generation from original bitmaps. I do not understand how this works.
+        // Texture generation from original Bitmaps (written by Timwi).
         const int padding = 9;
         const int thickSpacing = 6;
         const int thinSpacing = 3;
@@ -148,15 +209,14 @@ public class NotBitmapsScript : MonoBehaviour
         crd += cellWidth;
         for (int p = 0; p < padding; p++)
             drawLine(crd++, _lightColors);
-        for (int x = 0; x < _bitmaps[bmIx].Length; x++)
-            for (int y = 0; y < _bitmaps[bmIx][x].Length; y++)
-                if (_bitmaps[bmIx][x][y])
-                    for (int i = 0; i < cellWidth; i++)
-                        for (int j = 0; j < cellWidth; j++)
-                            tex.SetPixel(
-                                bitmapSize - 1 - offsets[x] - i,
-                                offsets[y] + j,
-                                _darkColors[_colorIxs[bmIx]]);
+        for (int ix = 0; ix < _bitmaps[bmIx].Pixels.Length; ix++)
+            if (_bitmaps[bmIx].Pixels[ix])
+                for (int i = 0; i < cellWidth; i++)
+                    for (int j = 0; j < cellWidth; j++)
+                        tex.SetPixel(
+                            bitmapSize - 1 - offsets[ix % 8] - i,
+                            offsets[ix / 8] + j,
+                            _darkColors[_colorIxs[bmIx]]);
 
         tex.Apply();
         return tex;
