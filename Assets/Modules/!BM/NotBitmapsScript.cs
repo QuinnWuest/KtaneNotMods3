@@ -19,17 +19,22 @@ public class NotBitmapsScript : MonoBehaviour
     public MeshRenderer Bitmap;
 
     private const int _bitmapSize = 4;
-    private bool[][][] _bitmaps = new bool[_bitmapSize][][];
+    private List<bool[][]> _bitmaps = new List<bool[][]>();
+    private int _bitmapIx;
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
     private bool _moduleSolved;
 
+    private Coroutine _cycleBitmaps;
+
     private static readonly Color[] _lightColors = new[] { new Color(1, .9f, .9f), new Color(.9f, 1, .9f), new Color(.9f, .9f, 1), new Color(1, 1, .9f), new Color(.9f, 1, 1), new Color(1, .9f, 1) };
     private static readonly Color[] _darkColors = new[] { new Color(.75f, .5f, .5f), new Color(.5f, .75f, .5f), new Color(.5f, .5f, .75f), new Color(.75f, .75f, .5f), new Color(.5f, .75f, .75f), new Color(.75f, .5f, .75f) };
+    private static readonly string[] _colorNames = new string[] { "red", "green", "blue", "yellow", "cyan", "magenta" };
 
     private Texture[] _bitmapTextures = new Texture[_bitmapSize];
     private int[] _colorIxs = new int[_bitmapSize];
+    private bool[] _hasBeenSatisfied = new bool[_bitmapSize];
     
     void Start()
     {
@@ -38,9 +43,9 @@ public class NotBitmapsScript : MonoBehaviour
             ButtonSels[i].OnInteract += ButtonPress(i);
 
         _colorIxs = Enumerable.Range(0, _lightColors.Length).ToArray().Shuffle().Take(_bitmapSize).ToArray();
-        for (int k = 0; k < _bitmaps.Length; k++)
+        for (int k = 0; k < _bitmapSize; k++)
         {
-            _bitmaps[k] = new bool[8][];
+            _bitmaps.Add(new bool[8][]);
             for (int j = 0; j < 8; j++)
             {
                 _bitmaps[k][j] = new bool[8];
@@ -48,13 +53,12 @@ public class NotBitmapsScript : MonoBehaviour
                     _bitmaps[k][j][i] = Rnd.Range(0, 2) == 0;
             }
         }
-        _moduleSolved = false;
 
         for (int i = 0; i < _bitmapTextures.Length; i++)
             _bitmapTextures[i] = GenTexture(i);
 
         Bitmap.material.shader = Shader.Find("Unlit/Transparent");
-        StartCoroutine(CycleBitmaps());
+        _cycleBitmaps = StartCoroutine(CycleBitmaps());
     }
 
     private KMSelectable.OnInteractHandler ButtonPress(int btn)
@@ -65,7 +69,18 @@ public class NotBitmapsScript : MonoBehaviour
             ButtonSels[btn].AddInteractionPunch(0.5f);
             if (_moduleSolved)
                 return false;
-            Debug.LogFormat("[Not Bitmaps #{0}] Pressed {1}.", _moduleId, btn);
+            Debug.LogFormat("[Not Bitmaps #{0}] Pressed {1} while the {2} bitmap was shown.", _moduleId, btn + 1, _colorNames[_colorIxs[_bitmapIx]]);
+            _hasBeenSatisfied[_bitmapIx] = true;
+            if (_cycleBitmaps != null)
+                StopCoroutine(_cycleBitmaps);
+            if (!_hasBeenSatisfied.Contains(false))
+            {
+                _moduleSolved = true;
+                Module.HandlePass();
+                Bitmap.gameObject.SetActive(false);
+                return false;
+            }
+            _cycleBitmaps = StartCoroutine(CycleBitmaps());
             return false;
         };
     }
@@ -74,10 +89,15 @@ public class NotBitmapsScript : MonoBehaviour
     {
         while (true)
         {
-            for (int i = 0; i < _bitmaps.Length; i++)
+            for (_bitmapIx = 0; _bitmapIx < _bitmaps.Count; _bitmapIx++)
             {
-                Bitmap.material.mainTexture = _bitmapTextures[i];
-                yield return new WaitForSeconds(1f);
+                if (_hasBeenSatisfied[_bitmapIx])
+                {
+                    yield return null;
+                    continue;
+                }
+                Bitmap.material.mainTexture = _bitmapTextures[_bitmapIx];
+                yield return new WaitForSeconds(1.5f);
             }
         }
     }

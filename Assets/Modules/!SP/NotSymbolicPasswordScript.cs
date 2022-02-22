@@ -72,7 +72,6 @@ public class NotSymbolicPasswordScript : MonoBehaviour
         for (int i = 0; i < 2; i++)
             for (int j = 0; j < 3; j++)
                 _currentPosition[i * 3 + j] = (rndStart + j + (i * SIZE)) % (SIZE * SIZE);
-        Debug.Log(_currentPosition.Join(" "));
         for (int img = 0; img < SymbolObjs.Length; img++)
             SymbolObjs[img].GetComponent<MeshRenderer>().material = SymbolMats[_imageGrid[_currentPosition[img]]];
         newShuff:

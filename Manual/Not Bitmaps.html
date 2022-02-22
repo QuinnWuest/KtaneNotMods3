@@ -12,27 +12,8 @@
         .dark table, table {
             border: none;
         }
-        .dark td img {
-            filter: invert(87%);
-        }
-		.hstack {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            text-align: center;
-        }
-        .hstack-table {
-            width: 47%;
-            margin: 0.5em;
-        }
-        .hstack-table td {
-            font-size: 9pt;
-        }
-		.not-bm-diag td {
-			width: 7px;
-			height: 15px;
+		.not-bm-diags {
+			margin: 0em auto;
 		}
         </style>
     </head>
@@ -47,28 +28,29 @@
                 <img src="img/Component/Bitmaps.svg" class="diagram">
                 <h2>On the Subject of Not Bitmaps</h2>
                 <p class="flavour-text">Bringing the cold.</p>
-                <p>A Not Bitmaps module will cycle through two different 8 by 8 bitmaps.</p>
-				
-				<div class="hstack">
-				
-                <table>
+                <p>A Not Bitmaps module will cycle through four different 8×8 bitmaps.</p>
+				<p>Within the bitmaps, a single 5×5 configuration from the tables below is present. Neither the bitmap nor the configuration wrap around.</p>
+				<p>Based on the configuration, and its position on the bitmap relative to the center, determine which buttons to press while that bitmap is shown.</p>
+                <table class="not-bm-diags">
                 <tr>
-                <td rowspan='4'>
-					<table class="not-bm-diag">
-					<tr><td></td><td></td><td></td><td></td><td></td></tr>
-					<tr><td></td><td></td><td></td><td></td><td></td></tr>
-					<tr><td></td><td></td><td></td><td></td><td></td></tr>
-					<tr><td></td><td></td><td></td><td></td><td></td></tr>
-					<tr><td></td><td></td><td></td><td></td><td></td></tr>
-					</table>
-				</td>
-					<td><strong><em>TL:</em></strong> </td></tr>
-                <tr><td><strong><em>TR:</em></strong> </td></tr>
-                <tr><td><strong><em>BL:</em></strong> </td></tr>
-                <tr><td><strong><em>BR:</em></strong> </td></tr>
+				<td><img src="img/Not Bitmaps/A.svg"></td>
+                <td><img src="img/Not Bitmaps/B.svg"></td>
+                <td><img src="img/Not Bitmaps/C.svg"></td>
+                <td><img src="img/Not Bitmaps/D.svg"></td>
+				</tr>
+				<tr>
+				<td><img src="img/Not Bitmaps/E.svg"></td>
+                <td><img src="img/Not Bitmaps/F.svg"></td>
+                <td><img src="img/Not Bitmaps/G.svg"></td>
+                <td><img src="img/Not Bitmaps/H.svg"></td>
+				</tr>
+				<tr>
+				<td><img src="img/Not Bitmaps/I.svg"></td>
+                <td><img src="img/Not Bitmaps/J.svg"></td>
+                <td><img src="img/Not Bitmaps/K.svg"></td>
+                <td><img src="img/Not Bitmaps/L.svg"></td>
+				</tr>
                 </table>
-				
-				</div>
             </div>
             <div class="page-footer relative-footer">Page 1 of 1</div>
         </div>
