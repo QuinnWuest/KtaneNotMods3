@@ -105,6 +105,7 @@ public class NotColoredSwitchesScript : MonoBehaviour
         Debug.LogFormat("[Not Colored Switches #{0}] Remaining letters: {1}", _moduleId, _otherLetters.Select(i => "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i]).Join());
         Debug.LogFormat("[Not Colored Switches #{0}] Switch colors: {1}.", _moduleId, _switchColors.Select(i => _colorNames[i]).Join(", "));
         Debug.LogFormat("[Not Colored Switches #{0}] Remaining letters, ciphered: {1}", _moduleId, _otherCipheredLetters.Select(i => "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i]).Join());
+        Debug.LogFormat("[Not Colored Switches #{0}] Expected switch configuration: {1}", _moduleId, IntToBinary(_chosenLetter).Select(i => i ? "↑" : "↓").Join(""));
     }
 
     private void SetColorblindMode(bool mode)
@@ -194,7 +195,6 @@ public class NotColoredSwitchesScript : MonoBehaviour
                 }
                 if (upCount != 0)
                 {
-                    Debug.LogFormat("[Not Colored Switches #{0}] Entering submission mode.", _moduleId);
                     _activated = true;
                     for (int j = 0; j < 5; j++)
                         LedBottomObjs[j].GetComponent<MeshRenderer>().material = LedMats[3];

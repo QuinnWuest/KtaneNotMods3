@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
+using KModkit;
 
 public class NotBitmapsScript : MonoBehaviour
 {
@@ -34,23 +35,32 @@ public class NotBitmapsScript : MonoBehaviour
     private readonly Texture[] _bitmapTextures = new Texture[_numBitmaps];
     private int[] _colorIxs;
     private readonly bool[] _hasBeenSatisfied = new bool[_numBitmaps];
+    private int[] _correctButtons = new int[4];
 
-    private static readonly bool[][] _fixedBitmaps = new string[]
+    private static readonly bool[][] _shapeConfigs = new string[]
     {
-        "0111010001100011000101110",
-        "0111011111111111111101110",
-        "0101010101010101010101010",
-        "0101011111011101111101010",
-        "0010001010010101000111111",
-        "0010001010100010101000100",
-        "0010001110111110111000100",
-        "1111110001100011000111111",
-        "1111111111110111111111111",
-        "1111110001010100101000100",
-        "1111111111011100111000100",
-        "0111011011100011101101110"
+        ".###.#..###.#.###..#.###.",
+        ".###.#.#.###.###.#.#.###.",
+        ".#.#.#.#.#.#.#.#.#.#.#.#.",
+        ".#.#.#####.#.#.#####.#.#.",
+        "..#...#.#..#.#.#...######",
+        "..#...#.#.#...#.#.#...#..",
+        "..#...###.##.##.###...#..",
+        ".###.##..##.#.##..##.###.",
+        "#...#.###..#.#..###.#...#",
+        "######...#.#.#..#.#...#..",
+        "#...###.##.#.#..###...#..",
+        ".###.##.###...###.##.###.",
+        "##.###...#..#..#...###.##",
+        ".#.#.##.##..#..##.##.#.#.",
+        "##.###.#.#.###.#.#.###.##",
+        "..#...###..#.#.##.###...#"
     }
-        .Select(sa => sa.Select(ch => ch == '0').ToArray()).ToArray();
+        .Select(sa => sa.Select(ch => ch == '.').ToArray()).ToArray();
+
+    public KMColorblindMode ColorblindMode;
+    public TextMesh ColorblindText;
+    private bool _colorblindMode;
 
     struct BitmapInfo
     {
@@ -65,29 +75,45 @@ public class NotBitmapsScript : MonoBehaviour
         _moduleId = _moduleIdCounter++;
         for (int i = 0; i < ButtonSels.Length; i++)
             ButtonSels[i].OnInteract += ButtonPress(i);
+        _colorblindMode = ColorblindMode.ColorblindModeActive;
+        SetColorblindMode(_colorblindMode);
 
         _colorIxs = Enumerable.Range(0, _lightColors.Length).ToArray().Shuffle().Take(_numBitmaps).ToArray();
-        _bitmaps = new BitmapInfo[4];
+        _bitmaps = new BitmapInfo[_numBitmaps];
         var rnd = new System.Random(Rnd.Range(0, int.MaxValue));
+        newBitmaps:
         for (int k = 0; k < _numBitmaps; k++)
             _bitmaps[k] = generateRandomBitmap(rnd);
-
+        if (_bitmaps.Select(i => i.Which).ToArray().Distinct().Count() != _numBitmaps)
+            goto newBitmaps;
         for (int i = 0; i < _bitmapTextures.Length; i++)
             _bitmapTextures[i] = GenTexture(i);
 
         Bitmap.material.shader = Shader.Find("Unlit/Transparent");
         _cycleBitmaps = StartCoroutine(CycleBitmaps());
+        for (int i = 0; i < _bitmaps.Length; i++)
+        {
+            Debug.LogFormat("[Not Bitmaps #{0}] In the {1} bitmap, configuration {2} is present.", _moduleId, _colorNames[_colorIxs[i]], "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[_bitmaps[i].Which]);
+            _correctButtons[i] = DetermineCorrectPress(_bitmaps[i].CenterX, _bitmaps[i].CenterY, _bitmaps[i].Which);
+            Debug.LogFormat("[Not Bitmaps #{0}] Press {1} while the {2} bitmap is shown.", _moduleId, _correctButtons[i] + 1, _colorNames[_colorIxs[i]]);
+        }
+    }
+
+    private void SetColorblindMode(bool mode)
+    {
+        ColorblindText.gameObject.SetActive(mode);
     }
 
     private BitmapInfo generateRandomBitmap(System.Random rnd)
     {
+        // Written by Timwi.
         var grid = new bool?[64];
-        var which = rnd.Next(0, _fixedBitmaps.Length);
+        var which = rnd.Next(0, _shapeConfigs.Length);
         var fx = rnd.Next(0, 4);
         var fy = rnd.Next(0, 4);
         for (var x = 0; x < 5; x++)
             for (var y = 0; y < 5; y++)
-                grid[x + fx + 8 * (y + fy)] = _fixedBitmaps[which][x + 5 * y];
+                grid[x + fx + 8 * (y + fy)] = _shapeConfigs[which][x + 5 * y];
         return new BitmapInfo
         {
             Pixels = generateRandomBitmapRecurse(rnd, grid),
@@ -99,6 +125,7 @@ public class NotBitmapsScript : MonoBehaviour
 
     private bool[] generateRandomBitmapRecurse(System.Random rnd, bool?[] grid)
     {
+        // Written by Timwi.
         var px = grid.IndexOf(b => b == null);
         if (px == -1)
             return grid.Select(b => b.Value).ToArray();
@@ -111,7 +138,7 @@ public class NotBitmapsScript : MonoBehaviour
             {
                 // Check that the subbitmap just completed is not one of the fixed ones
                 var subbitmap = Enumerable.Range(0, 25).Select(i => grid[(i % 5) + (px % 8 - 4) + 8 * ((i / 5) + (px / 8 - 4))].Value).ToArray();
-                if (_fixedBitmaps.Any(fb => fb.SequenceEqual(subbitmap)))
+                if (_shapeConfigs.Any(fb => fb.SequenceEqual(subbitmap)))
                     continue;
             }
             var subresult = generateRandomBitmapRecurse(rnd, grid);
@@ -130,15 +157,26 @@ public class NotBitmapsScript : MonoBehaviour
             ButtonSels[btn].AddInteractionPunch(0.5f);
             if (_moduleSolved)
                 return false;
-            Debug.LogFormat("[Not Bitmaps #{0}] Pressed {1} while the {2} bitmap was shown.", _moduleId, btn + 1, _colorNames[_colorIxs[_bitmapIx]]);
-            _hasBeenSatisfied[_bitmapIx] = true;
+            if (btn == _correctButtons[_bitmapIx])
+            {
+                _hasBeenSatisfied[_bitmapIx] = true;
+                Debug.LogFormat("[Not Bitmaps #{0}] Correctly pressed {1} while the {2} bitmap with shape {3} was shown.", _moduleId, btn + 1, _colorNames[_colorIxs[_bitmapIx]], "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[_bitmaps[_bitmapIx].Which]);
+                _colorIxs[_bitmapIx] = 69;
+            }
+            else
+            {
+                Module.HandleStrike();
+                Debug.LogFormat("[Not Bitmaps #{0}] Incorrectly pressed {1} while the {2} bitmap with shape {3} was shown, when {4} was expected. Strike.", _moduleId, btn + 1, _colorNames[_colorIxs[_bitmapIx]], "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[_bitmaps[_bitmapIx].Which], _correctButtons[_bitmapIx] + 1);
+            }
             if (_cycleBitmaps != null)
                 StopCoroutine(_cycleBitmaps);
             if (!_hasBeenSatisfied.Contains(false))
             {
+                ColorblindText.gameObject.SetActive(false);
                 _moduleSolved = true;
                 Module.HandlePass();
                 Bitmap.gameObject.SetActive(false);
+                Debug.LogFormat("[Not Bitmaps #{0}] All four bitmaps have been satisfied. Module solved.", _moduleId);
                 return false;
             }
             _cycleBitmaps = StartCoroutine(CycleBitmaps());
@@ -158,9 +196,85 @@ public class NotBitmapsScript : MonoBehaviour
                     continue;
                 }
                 Bitmap.material.mainTexture = _bitmapTextures[_bitmapIx];
+                ColorblindText.text = _colorNames[_colorIxs[_bitmapIx]].ToUpperInvariant();
                 yield return new WaitForSeconds(1.5f);
             }
         }
+    }
+
+    private int DetermineCorrectPress(int X, int Y, int shape)
+    {
+        int newX = X;
+        int newY = Y;
+        if (shape == 4)
+        {
+            newX--;
+            newY--;
+        }
+        if (shape == 5)
+        {
+            newX++;
+            newY--;
+        }
+        if(shape == 6)
+        {
+            newX--;
+            newY++;
+        }
+        if (shape == 7)
+        {
+            newX++;
+            newY++;
+        }
+        int fX = newX % 8 < 4 ? 0 : 1;
+        int fY = newY / 4 == 0 ? 0 : 2;
+        int quad = fX + fY;
+        int val = 0;
+        var clockwiseArr = new int[4] { 0, 1, 3, 2 };
+        var sn = BombInfo.GetSerialNumber();
+        switch (shape)
+        {
+            case 0:
+                val = quad;
+                break;
+            case 1:
+                val = (quad + 2) % 4;
+                break;
+            case 2:
+                val = quad ^ 1;
+                break;
+            case 3:
+                val = 3 - quad;
+                break;
+            case 8:
+                val = Array.IndexOf(clockwiseArr, (Array.IndexOf(clockwiseArr, quad) + sn[2] - '0') % 4);
+                break;
+            case 9:
+                val = Array.IndexOf(clockwiseArr, (Array.IndexOf(clockwiseArr, quad) + sn[5] - '0') % 4);
+                break;
+            case 10:
+                val = Array.IndexOf(clockwiseArr, (Array.IndexOf(clockwiseArr, quad) + 3 * BombInfo.GetIndicators().Count()) % 4);
+                break;
+            case 11:
+                val = Array.IndexOf(clockwiseArr, (Array.IndexOf(clockwiseArr, quad) + 3 * BombInfo.GetPortCount()) % 4);
+                break;
+            case 12:
+                val = Array.IndexOf(clockwiseArr, (Array.IndexOf(clockwiseArr, quad) + (sn[0] >= '0' && sn[0] <= '9' ? sn[0] - '0' : sn[0] - 'A' + 1)) % 4);
+                break;
+            case 13:
+                val = Array.IndexOf(clockwiseArr, (Array.IndexOf(clockwiseArr, quad) + (sn[1] >= '0' && sn[1] <= '9' ? sn[1] - '0' : sn[1] - 'A' + 1)) % 4);
+                break;
+            case 14:
+                val = Array.IndexOf(clockwiseArr, (Array.IndexOf(clockwiseArr, quad) + 3 * (sn[3] - 'A' + 1)) % 4);
+                break;
+            case 15:
+                val = Array.IndexOf(clockwiseArr, (Array.IndexOf(clockwiseArr, quad) + 3 * (sn[4] - 'A' + 1)) % 4);
+                break;
+            default:
+                val = quad;
+                break;
+        }
+        return val;
     }
 
     private Texture GenTexture(int bmIx)
@@ -223,15 +337,53 @@ public class NotBitmapsScript : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} press 2 [Press button 2.] | 'press' is optional.";
+    private readonly string TwitchHelpMessage = @"!{0} press green 2 [Press button 2 while the green bitmap is shown.] | Bitmap colors are: red, green, blue, yellow, cyan, magenta. | !{0} colorblind [Toggles colorblind mode.] | 'press' is optional.";
 #pragma warning restore 414
 
+    // "red", "green", "blue", "yellow", "cyan", "magenta" 
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        var m = Regex.Match(command, @"^\s*(?:press\s+)?([1-4])\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        var m = Regex.Match(command, @"^\s*(?:colorblind|cb)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (m.Success)
+        {
+            yield return null;
+            _colorblindMode = !_colorblindMode;
+            SetColorblindMode(_colorblindMode);
+        }
+        m = Regex.Match(command, @"^\s*(?:press\s+)?((?<red>red)|(?<green>green)|(?<blue>blue)|(?<yellow>yellow)|(?<cyan>cyan)|magenta)\s+([1-4])\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         if (!m.Success)
             yield break;
         yield return null;
-        ButtonSels[int.Parse(m.Groups[1].Value) - 1].OnInteract();
+        int color = -1;
+        if (m.Groups["red"].Success)
+            color = 0;
+        else if (m.Groups["green"].Success)
+            color = 1;
+        else if (m.Groups["blue"].Success)
+            color = 2;
+        else if (m.Groups["yellow"].Success)
+            color = 3;
+        else if (m.Groups["cyan"].Success)
+            color = 4;
+        else
+            color = 5;
+        if (!_colorIxs.Contains(color) || color == -1)
+        {
+            yield return "sendtochaterror The color " + _colorNames[color] + " is not present in the cycling bitmaps!";
+            yield break;
+        }
+        while (_colorIxs[_bitmapIx] != color)
+            yield return null;
+        yield return new WaitForSeconds(0.2f);
+        ButtonSels[int.Parse(m.Groups[2].Value) - 1].OnInteract();
+    }
+
+    private IEnumerator TwitchHandleForcedSolve()
+    {
+        while (!_moduleSolved)
+        {
+            ButtonSels[_correctButtons[_bitmapIx]].OnInteract();
+            yield return new WaitForSeconds(0.2f);
+        }
     }
 }
