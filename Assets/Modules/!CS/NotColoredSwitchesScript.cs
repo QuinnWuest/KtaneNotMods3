@@ -92,6 +92,7 @@ public class NotColoredSwitchesScript : MonoBehaviour
         }
         if (_switchColors.Distinct().Count() != 5)
             goto newColors;
+        newWord:
         _chosenWord = _wordList[Rnd.Range(0, _wordList.Length)];
         var shuff = Enumerable.Range(0, 6).ToArray().Shuffle();
         _chosenLetter = _chosenWord[shuff[5]] - 'A';
@@ -100,6 +101,8 @@ public class NotColoredSwitchesScript : MonoBehaviour
             _otherLetters[i] = _chosenWord[shuff[i]] - 'A';
             _otherCipheredLetters[i] = Cipher(_otherLetters[i], _switchColors[i], i);
         }
+        if (AmbiguityCheck())
+            goto newWord;
         Debug.LogFormat("[Not Colored Switches #{0}] Chosen word: {1}", _moduleId, _chosenWord);
         Debug.LogFormat("[Not Colored Switches #{0}] Chosen letter: {1}", _moduleId, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[_chosenLetter]);
         Debug.LogFormat("[Not Colored Switches #{0}] Remaining letters: {1}", _moduleId, _otherLetters.Select(i => "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i]).Join());
@@ -282,6 +285,15 @@ public class NotColoredSwitchesScript : MonoBehaviour
         }
         for (int i = 0; i < 5; i++)
             _isAnimating[i] = false;
+    }
+
+    private bool AmbiguityCheck()
+    {
+        if (_chosenWord == "RESIST" && _chosenLetter == 18)
+            return true;
+        if (_chosenWord == "STRIKE" && _chosenLetter == 10)
+            return true;
+        return false;
     }
 
     private static string[] _twitchCommands = { "toggle", "switch", "flip", "press" };
