@@ -162,24 +162,24 @@ public class NotBitmapsScript : MonoBehaviour
                 _hasBeenSatisfied[_bitmapIx] = true;
                 Debug.LogFormat("[Not Bitmaps #{0}] Correctly pressed {1} while the {2} bitmap with shape {3} was shown.", _moduleId, btn + 1, _colorNames[_colorIxs[_bitmapIx]], "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[_bitmaps[_bitmapIx].Which]);
                 _colorIxs[_bitmapIx] = 69;
+                if (_cycleBitmaps != null)
+                    StopCoroutine(_cycleBitmaps);
+                if (!_hasBeenSatisfied.Contains(false))
+                {
+                    ColorblindText.gameObject.SetActive(false);
+                    _moduleSolved = true;
+                    Module.HandlePass();
+                    Bitmap.gameObject.SetActive(false);
+                    Debug.LogFormat("[Not Bitmaps #{0}] All four bitmaps have been satisfied. Module solved.", _moduleId);
+                    return false;
+                }
+                _cycleBitmaps = StartCoroutine(CycleBitmaps());
             }
             else
             {
                 Module.HandleStrike();
                 Debug.LogFormat("[Not Bitmaps #{0}] Incorrectly pressed {1} while the {2} bitmap with shape {3} was shown, when {4} was expected. Strike.", _moduleId, btn + 1, _colorNames[_colorIxs[_bitmapIx]], "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[_bitmaps[_bitmapIx].Which], _correctButtons[_bitmapIx] + 1);
             }
-            if (_cycleBitmaps != null)
-                StopCoroutine(_cycleBitmaps);
-            if (!_hasBeenSatisfied.Contains(false))
-            {
-                ColorblindText.gameObject.SetActive(false);
-                _moduleSolved = true;
-                Module.HandlePass();
-                Bitmap.gameObject.SetActive(false);
-                Debug.LogFormat("[Not Bitmaps #{0}] All four bitmaps have been satisfied. Module solved.", _moduleId);
-                return false;
-            }
-            _cycleBitmaps = StartCoroutine(CycleBitmaps());
             return false;
         };
     }
