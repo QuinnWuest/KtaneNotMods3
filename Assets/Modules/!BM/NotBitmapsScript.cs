@@ -161,7 +161,6 @@ public class NotBitmapsScript : MonoBehaviour
             {
                 _hasBeenSatisfied[_bitmapIx] = true;
                 Debug.LogFormat("[Not Bitmaps #{0}] Correctly pressed {1} while the {2} bitmap with shape {3} was shown.", _moduleId, btn + 1, _colorNames[_colorIxs[_bitmapIx]], "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[_bitmaps[_bitmapIx].Which]);
-                _colorIxs[_bitmapIx] = 69;
                 if (_cycleBitmaps != null)
                     StopCoroutine(_cycleBitmaps);
                 if (!_hasBeenSatisfied.Contains(false))
@@ -186,15 +185,12 @@ public class NotBitmapsScript : MonoBehaviour
 
     private IEnumerator CycleBitmaps()
     {
-        while (true)
+        while (_hasBeenSatisfied.Contains(false))
         {
             for (_bitmapIx = 0; _bitmapIx < _bitmaps.Length; _bitmapIx++)
             {
                 if (_hasBeenSatisfied[_bitmapIx])
-                {
-                    yield return null;
                     continue;
-                }
                 Bitmap.material.mainTexture = _bitmapTextures[_bitmapIx];
                 ColorblindText.text = _colorNames[_colorIxs[_bitmapIx]].ToUpperInvariant();
                 yield return new WaitForSeconds(1.5f);
@@ -234,9 +230,6 @@ public class NotBitmapsScript : MonoBehaviour
         var sn = BombInfo.GetSerialNumber();
         switch (shape)
         {
-            case 0:
-                val = quad;
-                break;
             case 1:
                 val = (quad + 2) % 4;
                 break;
