@@ -216,103 +216,121 @@ public class NotSymbolicPasswordScript : MonoBehaviour
         _isAnimating = false;
     }
 #pragma warning disable 0414
-    private string TwitchHelpMessage = "Phase 0: !{0} press submit [Presses the submit button.] | 'press' is optional.";
+    private string TwitchHelpMessage = "Phase 0: !{0} r1l4 [Moves row 1 left 4 times.] | !{0} c3d5 [Moves column 3 down 5 times.] | #{0} submit [Presses the submit button.]";
 #pragma warning restore 0414
 
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        command = command.Trim().ToLowerInvariant();
-        var pieces = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-        if (pieces.Length >= 2 && pieces[0] == "cycle")
+        command = command.ToLowerInvariant();
+        var m = Regex.Match(command, @"^\s*submit\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (m.Success)
         {
-            if (_isAnimating)
+            yield return null;
+            yield return "strike";
+            yield return "solve";
+            while (_isAnimating)
+                yield return null;
+            SubmitBtnSel.OnInteract();
+            yield break;
+        }
+        var list = new List<KMSelectable>();
+        var parameters = command.Split(' ');
+        for (int i = 0; i < parameters.Length; i++)
+        {
+            var s = parameters[i];
+            var sel = TPSelDecider(s);
+            if (sel == null)
             {
-                yield return "sendtochaterror You can't cycle anything while the animation is playing!";
+                yield return "sendtochaterror " + s + " is not a valid command!";
                 yield break;
             }
-            var list = new List<KMSelectable>();
-            int button;
-            for (int i = 1; i < pieces.Length; i++)
+            int val;
+            if (!int.TryParse(s.Substring(3), out val))
             {
-                switch (pieces[i])
-                {
-                    case "l": case "left": list.Add(ArrowBtnSels[0]); break;
-                    case "m": case "middle": case "c": case "center": case "centre": list.Add(ArrowBtnSels[1]); break;
-                    case "r": case "right": list.Add(ArrowBtnSels[2]); break;
-
-                    case "t":
-                    case "top":
-                    case "u":
-                    case "up":
-                    case "upper":
-                        if ((i + 1) == pieces.Length)
-                            yield break;
-                        switch (pieces[i + 1])
-                        {
-                            case "l": case "left": button = 6; break;
-                            case "r": case "right": button = 7; break;
-                            default: yield break;
-                        }
-                        list.Add(ArrowBtnSels[button]);
-                        i++;
-                        break;
-                    case "tl":
-                    case "topleft":
-                    case "ul":
-                    case "upleft":
-                    case "upperleft":
-                        list.Add(ArrowBtnSels[6]);
-                        break;
-
-                    case "tr":
-                    case "topright":
-                    case "ur":
-                    case "upright":
-                    case "upperright":
-                        list.Add(ArrowBtnSels[7]);
-                        break;
-                    case "b":
-                    case "bottom":
-                    case "d":
-                    case "down":
-                    case "lower":
-                        if ((i + 1) == pieces.Length)
-                            yield break;
-                        switch (pieces[i + 1])
-                        {
-                            case "l": case "left": button = 8; break;
-                            case "r": case "right": button = 9; break;
-                            default: yield break;
-                        }
-                        list.Add(ArrowBtnSels[button]);
-                        i++;
-                        break;
-                    case "bl":
-                    case "bottomleft":
-                    case "dl":
-                    case "downleft":
-                    case "lowerleft":
-                        list.Add(ArrowBtnSels[8]);
-                        break;
-                    case "br":
-                    case "bottomright":
-                    case "dr":
-                    case "downright":
-                    case "lowerright":
-                        list.Add(ArrowBtnSels[9]);
-                        break;
-                    default:
-                        yield break;
-                }
+                yield return "sendtochaterror " + s + " is not a valid command!";
+                yield break;
             }
-            yield return null;
-            yield return list;
+            if (val < 0)
+            {
+                yield return "sendtochaterror you cant press a button less than 1 times!";
+                yield break;
+            }
+            if (val > 16)
+            {
+                yield return "sendtochaterror you cant press a button more than 16 times!";
+                yield break;
+            }
+            for (int j = 0; j < val; j++)
+                list.Add(sel);
         }
-        else if (pieces.Length == 1 && pieces[0] == "submit")
+        yield return null;
+        while (_isAnimating)
+            yield return null;
+        for (int i = 0; i < list.Count; i++)
         {
-            yield return null;
-            yield return SubmitBtnSel;
+            list[i].OnInteract();
+            yield return new WaitForSeconds(0.1f);
         }
+    }
+
+    private KMSelectable TPSelDecider(string s)
+    {
+        if (s.Length < 4)
+            return null;
+        if (s[0] == 'r')
+        {
+            if (s[1] == '1')
+            {
+                if (s[2] == 'l')
+                    return ArrowBtnSels[6];
+                else if (s[2] == 'r')
+                    return ArrowBtnSels[7];
+                else
+                    return null;
+            }
+            else if (s[1] == '2')
+            {
+                if (s[2] == 'l')
+                    return ArrowBtnSels[8];
+                else if (s[2] == 'r')
+                    return ArrowBtnSels[9];
+                else
+                    return null;
+            }
+            else
+                return null;
+        }
+        else if (s[0] == 'c')
+        {
+            if (s[1] == '1')
+            {
+                if (s[2] == 'u')
+                    return ArrowBtnSels[0];
+                else if (s[2] == 'd')
+                    return ArrowBtnSels[3];
+                else
+                    return null;
+            }
+            else if (s[1] == '2')
+            {
+                if (s[2] == 'u')
+                    return ArrowBtnSels[1];
+                else if (s[2] == 'd')
+                    return ArrowBtnSels[4];
+                else
+                    return null;
+            }
+            else if (s[1] == '3')
+            {
+                if (s[2] == 'u')
+                    return ArrowBtnSels[2];
+                else if (s[2] == 'd')
+                    return ArrowBtnSels[5];
+                else
+                    return null;
+            }
+        }
+        return null;
     }
 
     private IEnumerator TwitchHandleForcedSolve()
