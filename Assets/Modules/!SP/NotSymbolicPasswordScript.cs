@@ -85,7 +85,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
             goto newShuff;
         for (int img = 0; img < SymbolObjs.Length; img++)
             SymbolObjs[img].GetComponent<MeshRenderer>().material = SymbolMats[_imageGrid[_currentPosition[img]]];
-        Debug.LogFormat("[Not Symbolic Password #{0}] Stage {1}, Starting position: {2}", _moduleId, _currentStage + 1, _currentPosition.Select(i => _symbChars[_imageGrid[i]]).Join(""));
+        Debug.LogFormat("[Not Symbolic Password #{0}] Starting position: {1}", _moduleId, _currentPosition.Select(i => _symbChars[_imageGrid[i]]).Join(""));
     }
 
     private KMSelectable.OnInteractHandler ArrowBtnPress(int btn)
@@ -110,9 +110,9 @@ public class NotSymbolicPasswordScript : MonoBehaviour
             return false;
         if (CheckEquality())
         {
-            Debug.LogFormat("[Not Symbolic Password #{0}] Successfully submitted {1}. {2}.", _moduleId, _currentPosition.Select(i => _symbChars[_imageGrid[i]]).Join(""), (_currentStage + 2) != 4 ? "Moving to Stage " + (_currentStage + 2) : "Module solved");
+            Debug.LogFormat("[Not Symbolic Password #{0}] Successfully submitted {1}. Module solved.", _moduleId, _currentPosition.Select(i => _symbChars[_imageGrid[i]]).Join(""));
             _currentStage++;
-            if (_currentStage != 3)
+            if (_currentStage != 1)
                 Generate();
             StartCoroutine(ShuffleAnimation());
             return false;
@@ -193,7 +193,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
                 {
                     if (i % 6 == 0)
                         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonRelease, transform);
-                    if (_currentStage != 3)
+                    if (_currentStage != 1)
                         SymbolObjs[obj].GetComponent<MeshRenderer>().material = SymbolMats[_imageGrid[_currentPosition[obj]]];
                     else
                     {
@@ -206,7 +206,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
             }
             yield return new WaitForSeconds(0.1f);
         }
-        if (_currentStage == 3)
+        if (_currentStage == 1)
         {
             _moduleSolved = true;
             Module.HandlePass();
@@ -216,7 +216,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
         _isAnimating = false;
     }
 #pragma warning disable 0414
-    private string TwitchHelpMessage = "Phase 0: !{0} r1l4 [Moves row 1 left 4 times.] | !{0} c3d5 [Moves column 3 down 5 times.] | #{0} submit [Presses the submit button.]";
+    private string TwitchHelpMessage = "!{0} r1l4 [Moves row 1 left 4 times.] | !{0} c3d5 [Moves column 3 down 5 times.] | #{0} submit [Presses the submit button.]";
 #pragma warning restore 0414
 
     private IEnumerator ProcessTwitchCommand(string command)
@@ -335,7 +335,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
 
     private IEnumerator TwitchHandleForcedSolve()
     {
-        for (int s = _currentStage; s < 3; s++)
+        for (int s = _currentStage; s < 1; s++)
         {
             while (_isAnimating)
                 yield return true;
