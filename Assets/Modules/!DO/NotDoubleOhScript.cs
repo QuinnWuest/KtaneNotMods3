@@ -159,7 +159,7 @@ public class NotDoubleOhScript : MonoBehaviour
 
     private void PhaseOne()
     {
-        TwitchHelpMessage = "Phase 1: !{0} press horiz1 even [Presses horiz1 on an even digit.] | 'press' is optional. Buttons are: horiz1, horiz2, vert1, vert2.";
+        TwitchHelpMessage = "Phase 1: !{0} press horiz1 even [Presses horiz1 on an even digit.] | !{0} press submit [Presses submit button.] | 'press' is optional. Buttons are: horiz1, horiz2, vert1, vert2.";
         _currentPhase = 1;
         _currentPosition = Rnd.Range(0, 64);
         Debug.LogFormat("[Not Double-Oh #{0}] Entering Phase One. Current position: {1}", _moduleId, _grid[_currentPosition]);
@@ -277,7 +277,7 @@ public class NotDoubleOhScript : MonoBehaviour
 
     private void PhaseThree()
     {
-        TwitchHelpMessage = "Phase 1: !{0} press horiz1 even [Presses horiz1 on an even digit.] | 'press' is optional. Buttons are: horiz1, horiz2, vert1, vert2.";
+        TwitchHelpMessage = "Phase 3: !{0} press horiz1 even [Presses horiz1 on an even digit.] | 'press' is optional. Buttons are: horiz1, horiz2, vert1, vert2.";
         Debug.LogFormat("[Not Double-Oh #{0}] Entering Phase Three. Current position: {1}. Good luck!", _moduleId, _grid[_currentPosition]);
         _currentPhase = 3;
         _posIx = 0;
