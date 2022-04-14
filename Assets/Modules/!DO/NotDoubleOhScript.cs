@@ -300,6 +300,23 @@ public class NotDoubleOhScript : MonoBehaviour
         }
     }
 
+    private sealed class TpPress : IEquatable<TpPress>
+    {
+        public int btn;
+        public int digit;
+
+        public TpPress(int btn, int digit)
+        {
+            this.btn = btn;
+            this.digit = digit;
+        }
+
+        public bool Equals(TpPress other)
+        {
+            return other != null && other.btn == btn && other.digit == digit;
+        }
+    }
+
 #pragma warning disable 0414
     private string TwitchHelpMessage = "Phase 0: !{0} press submit [Presses the submit button.] | 'press' is optional.";
 #pragma warning restore 0414
@@ -307,17 +324,26 @@ public class NotDoubleOhScript : MonoBehaviour
     private IEnumerator ProcessTwitchCommand(string command)
     {
         Match m;
+        var parameters = command.ToLowerInvariant().Split(' ');
         if (_currentPhase == 0 || _currentPhase == 2)
         {
-            m = Regex.Match(command, @"^\s*(press\s+)?submit\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            m = Regex.Match(command, @"^\s*(press\s+)?s(ubmit)?\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             if (m.Success)
             {
                 yield return null;
                 SubmitBtnSel.OnInteract();
                 yield break;
             }
-            m = Regex.Match(command, @"^\s*(press\s+)?((?<vert1>vert1)|(?<horiz1>horiz1)|(?<horiz2>horiz2)|vert2)\s+((?<even>even)|odd)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            if (m.Success)
+            if (parameters.Length < 1 || (parameters.Length < 2 && parameters[0] == "press"))
+                yield break;
+            int ix = parameters[0] == "press" ? 1 : 0;
+            TpPress b1 = GetBtnFromShort(parameters[ix]);
+            TpPress b2;
+            if (parameters.Length != 1 + ix)
+                b2 = GetBtnFromLong(parameters[ix], parameters[ix + 1]);
+            else
+                b2 = null;
+            if (b1 != null || b2 != null)
             {
                 yield return null;
                 yield return "sendtochaterror You can't press an arrowed button at Phase " + _currentPhase + "!";
@@ -326,7 +352,7 @@ public class NotDoubleOhScript : MonoBehaviour
         }
         if (_currentPhase == 1 || _currentPhase == 3)
         {
-            m = Regex.Match(command, @"^\s*(press\s+)?submit\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            m = Regex.Match(command, @"^\s*(press\s+)?s(ubmit)?\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             if (m.Success)
             {
                 yield return null;
@@ -338,17 +364,60 @@ public class NotDoubleOhScript : MonoBehaviour
                 SubmitBtnSel.OnInteract();
                 yield break;
             }
-            m = Regex.Match(command, @"^\s*(press\s+)?((?<vert1>vert1)|(?<horiz1>horiz1)|(?<horiz2>horiz2)|vert2)\s+((?<even>even)|odd)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            if (m.Success)
+            if (parameters.Length < 1 || (parameters.Length < 2 && parameters[0] == "press"))
+                yield break;
+            int ix = parameters[0] == "press" ? 1 : 0;
+            var list = new List<TpPress>();
+            for (int i = ix; i < parameters.Length; i++)
             {
-                yield return null;
-                var btn = m.Groups["vert1"].Success ? ArrowBtnSels[0] : m.Groups["horiz1"].Success ? ArrowBtnSels[1] : m.Groups["horiz2"].Success ? ArrowBtnSels[2] : ArrowBtnSels[3];
-                var digit = m.Groups["even"].Success ? 0 : 1;
-                while ((int)BombInfo.GetTime() % 2 != digit)
+                TpPress b1 = GetBtnFromShort(parameters[i]);
+                TpPress b2;
+                if (i != parameters.Length - 1 + ix)
+                    b2 = GetBtnFromLong(parameters[i], parameters[i + 1]);
+                else
+                    b2 = null;
+                if (b1 != null)
+                {
+                    list.Add(b1);
+                    continue;
+                }
+                if (b2 != null)
+                {
+                    list.Add(b2);
+                    i++;
+                    continue;
+                }
+                yield break;
+            }
+            yield return null;
+            for (int i = 0; i < list.Count; i++)
+            {
+                while ((int)BombInfo.GetTime() % 2 != list[i].digit)
                     yield return null;
-                btn.OnInteract();
+                ArrowBtnSels[list[i].btn].OnInteract();
+                yield return new WaitForSeconds(0.1f);
             }
         }
+    }
+
+    private TpPress GetBtnFromShort(string str)
+    {
+        string s = str.ToLowerInvariant();
+        if (s.Length != 3 || (s[0] != 'h' && s[0] != 'v') || (s[1] != '1' && str[1] != '2') || (s[2] != 'e' && str[2] != 'o')) return null;
+        int b;
+        if (s[0] == 'h') { if (s[1] == '1') b = 1; else b = 2; }
+        else { if (s[1] == 'h') b = 0; else b = 3; }
+        int t = s[2] == 'e' ? 0 : 1;
+        return new TpPress(b, t);
+    }
+
+    private TpPress GetBtnFromLong(string str1, string str2)
+    {
+        var btns = new string[] { "vert1", "horiz1", "horiz2", "vert2" };
+        var times = new string[] { "even", "odd" };
+        if (!btns.Contains(str1) || !times.Contains(str2))
+            return null;
+        return new TpPress(Array.IndexOf(btns, str1), Array.IndexOf(times, str2));
     }
 
     private IEnumerator TwitchHandleForcedSolve()
