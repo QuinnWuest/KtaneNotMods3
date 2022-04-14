@@ -119,11 +119,6 @@ public class NotDoubleOhScript : MonoBehaviour
                         _moduleSolved = true;
                         Module.HandlePass();
                         Audio.PlaySoundAtTransform("DoubleOSolve", transform);
-                        for (int seg = 0; seg < 7; seg++)
-                        {
-                            LeftSegObjs[seg].SetActive(false);
-                            RightSegObjs[seg].SetActive(false);
-                        }
                         Debug.LogFormat("[Not Double-Oh #{0}] Successfully travelled to all goal positions in order. Module solved.", _moduleId);
                     }
                 }
