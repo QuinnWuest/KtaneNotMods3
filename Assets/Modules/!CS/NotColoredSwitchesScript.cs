@@ -36,7 +36,7 @@ public class NotColoredSwitchesScript : MonoBehaviour
         new int[5] { 14, 16, 23, 17, 14 },
         new int[5] { 17, 17, 31, 17, 17 },
         new int[5] { 31, 4, 4, 4, 31 },
-        new int[5] { 31, 2, 2, 2, 12 },
+        new int[5] { 1, 1, 1, 17, 14 },
         new int[5] { 17, 18, 28, 18, 17 },
         new int[5] { 16, 16, 16, 16, 31 },
         new int[5] { 17, 27, 21, 17, 17 },
