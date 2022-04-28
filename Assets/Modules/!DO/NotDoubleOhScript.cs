@@ -401,7 +401,7 @@ public class NotDoubleOhScript : MonoBehaviour
         if (s.Length != 3 || (s[0] != 'h' && s[0] != 'v') || (s[1] != '1' && str[1] != '2') || (s[2] != 'e' && str[2] != 'o')) return null;
         int b;
         if (s[0] == 'h') { if (s[1] == '1') b = 1; else b = 2; }
-        else { if (s[1] == 'h') b = 0; else b = 3; }
+        else { if (s[1] == '1') b = 0; else b = 3; }
         int t = s[2] == 'e' ? 0 : 1;
         return new TpPress(b, t);
     }
