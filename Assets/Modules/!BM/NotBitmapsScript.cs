@@ -212,7 +212,7 @@ public class NotBitmapsScript : MonoBehaviour
             newX++;
             newY--;
         }
-        if(shape == 6)
+        if (shape == 6)
         {
             newX--;
             newY++;
@@ -342,11 +342,11 @@ public class NotBitmapsScript : MonoBehaviour
             yield return null;
             _colorblindMode = !_colorblindMode;
             SetColorblindMode(_colorblindMode);
+            yield break;
         }
-        m = Regex.Match(command, @"^\s*(?:press\s+)?((?<red>red)|(?<green>green)|(?<blue>blue)|(?<yellow>yellow)|(?<cyan>cyan)|magenta)\s+([1-4])\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        m = Regex.Match(command, @"^\s*(?:press\s+)?((?<red>red)|(?<green>green)|(?<blue>blue)|(?<yellow>yellow)|(?<cyan>cyan)|(?<magenta>magenta))\s+([1-4])\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         if (!m.Success)
             yield break;
-        yield return null;
         int color = -1;
         if (m.Groups["red"].Success)
             color = 0;
@@ -358,16 +358,16 @@ public class NotBitmapsScript : MonoBehaviour
             color = 3;
         else if (m.Groups["cyan"].Success)
             color = 4;
-        else
+        else if (m.Groups["magenta"].Success)
             color = 5;
-        if (!_colorIxs.Contains(color) || color == -1)
+        if (!_colorIxs.Contains(color))
         {
             yield return "sendtochaterror The color " + _colorNames[color] + " is not present in the cycling bitmaps!";
             yield break;
         }
+        yield return null;
         while (_colorIxs[_bitmapIx] != color)
             yield return null;
-        yield return new WaitForSeconds(0.2f);
         ButtonSels[int.Parse(m.Groups[2].Value) - 1].OnInteract();
     }
 
