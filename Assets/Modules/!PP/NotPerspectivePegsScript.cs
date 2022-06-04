@@ -37,10 +37,8 @@ public class NotPerspectivePegsScript : MonoBehaviour
     private static readonly string[] _flashSounds = new string[] { "PP0", "PP1", "PP2", "PP3", "PP4" };
     private static readonly string[] _colorNames = new string[] { "BLUE", "GREEN", "PURPLE", "RED", "YELLOW" };
 
-    private bool _pegsRaised;
-    private bool _canInteract;
+    private bool _canInteract = true;
     private int[] _pegColors = new int[25];
-
     private bool _colorblindMode;
 
     private int[] _flashPegPosition = new int[5];
@@ -52,6 +50,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
     private int _currentStage;
     private Coroutine _flashSequence;
     private int _pressIx;
+    private bool _hasInteracted;
 
     private void Start()
     {
@@ -60,6 +59,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
         SetColorblindMode(_colorblindMode);
         for (int i = 0; i < PegSels.Length; i++)
             PegSels[i].OnInteract += PegPress(i);
+        _flashSequence = StartCoroutine(FlashSequence());
         var tempPegList = new List<int>();
         for (int i = 0; i < 5; i++)
         {
@@ -93,7 +93,8 @@ public class NotPerspectivePegsScript : MonoBehaviour
             for (int i = 0; i < _currentStage + 1; i++)
             {
                 yield return new WaitForSeconds(0.3f);
-                Audio.PlaySoundAtTransform(_flashSounds[_flashPegColor[i]], transform);
+                if (_hasInteracted)
+                    Audio.PlaySoundAtTransform(_flashSounds[_flashPegColor[i]], transform);
                 PegFaceObjs[_flashPegColorIx[i]].GetComponent<MeshRenderer>().material = OnMats[_flashPegColor[i]];
                 yield return new WaitForSeconds(0.3f);
                 PegFaceObjs[_flashPegColorIx[i]].GetComponent<MeshRenderer>().material = OffMats[_flashPegColor[i]];
@@ -106,18 +107,10 @@ public class NotPerspectivePegsScript : MonoBehaviour
     {
         return delegate ()
         {
-            if (_moduleSolved)
+            if (_moduleSolved || !_canInteract)
                 return false;
-            if (!_pegsRaised)
-            {
-                Debug.LogFormat("[Not Perspective Pegs #{0}] Raising pegs...", _moduleId);
-                StartCoroutine(RaiseAllPegs());
-                return false;
-            }
-            if (!_canInteract)
-                return false;
-
             // Regular peg pressing
+            _hasInteracted = true;
             PegSels[peg].AddInteractionPunch(0.5f);
             Audio.PlaySoundAtTransform(_flashSounds[peg], PegSels[peg].transform);
             if (_flashSequence != null)
@@ -158,24 +151,6 @@ public class NotPerspectivePegsScript : MonoBehaviour
     {
         for (int i = 0; i < 25; i++)
             ColorblindText[i].gameObject.SetActive(mode);
-    }
-
-    private IEnumerator RaiseAllPegs()
-    {
-        _pegsRaised = true;
-        var duration = 1f;
-        var elapsed = 0f;
-        while (elapsed < duration)
-        {
-            for (int peg = 0; peg < 5; peg++)
-                PegObjs[peg].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0f, elapsed / duration));
-            yield return null;
-            elapsed += Time.deltaTime;
-        }
-        for (int peg = 0; peg < 5; peg++)
-            PegObjs[peg].transform.localPosition = new Vector3(0f, 0f, 0f);
-        _canInteract = true;
-        _flashSequence = StartCoroutine(FlashSequence());
     }
 
     private IEnumerator SolveAnimation()
@@ -304,16 +279,16 @@ public class NotPerspectivePegsScript : MonoBehaviour
                 }
             }
             yield return null;
-            yield return list;
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i].OnInteract();
+                yield return new WaitForSeconds(0.3f);
+            }
         }
     }
 
     private IEnumerator TwitchHandleForcedSolve()
     {
-        if (!_pegsRaised)
-            PegSels[0].OnInteract();
-        while (!_canInteract)
-            yield return true;
         while (_currentStage != 5)
         {
             PegSels[_pegAnswers[_pressIx]].OnInteract();
