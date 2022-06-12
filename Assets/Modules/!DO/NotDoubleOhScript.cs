@@ -44,8 +44,8 @@ public class NotDoubleOhScript : MonoBehaviour
 
     private static readonly string[] _grid = new string[64];
     private static readonly string[] _functionNames = new string[8] {
-        "toggle your position between an even or odd column within the 4×4 subgrid.",
-        "toggle your position between an even or odd row within the 4×4 subgrid.",
+        "toggle your position between the left or right half within the 2×2 subgrid.",
+        "toggle your position between the top or bottom half within the 2×2 subgrid.",
         "toggle your position between the left or right half within the 4×4 subgrid.",
         "toggle your position between the top or bottom half within the 4×4 subgrid.",
         "toggle your position between the left or right half of the entire 8×8 grid.",
