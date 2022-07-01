@@ -366,11 +366,7 @@ public class NotDoubleOhScript : MonoBehaviour
             for (int i = ix; i < parameters.Length; i++)
             {
                 TpPress b1 = GetBtnFromShort(parameters[i]);
-                TpPress b2;
-                if (i != parameters.Length - 1 + ix)
-                    b2 = GetBtnFromLong(parameters[i], parameters[i + 1]);
-                else
-                    b2 = null;
+                TpPress b2 = (i != parameters.Length - 1) ? GetBtnFromLong(parameters[i], parameters[i + 1]) : null;
                 if (b1 != null)
                 {
                     list.Add(b1);

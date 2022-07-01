@@ -139,7 +139,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
                     _flashSequence = StartCoroutine(FlashSequence());
                 else
                 {
-                    _moduleSolved = true;
+                    _canInteract = false;
                     StartCoroutine(SolveAnimation());
                 }
             }
@@ -236,6 +236,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
         }
         for (int peg = 0; peg < 5; peg++)
             PegObjs[peg].transform.localPosition = new Vector3(0f, 0f, -1.5f);
+        _moduleSolved = true;
         Module.HandlePass();
     }
 
