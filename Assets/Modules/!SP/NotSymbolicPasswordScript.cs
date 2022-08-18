@@ -30,7 +30,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
     private int _currentStage;
     private bool _isAnimating = true;
 
-    private static string _symbChars = "©★☆ټҖΩѬѼϗϬϞѦæԆӬҊѮ¿¶ϾϿΨҨ҂ϘƛѢ";
+    private static readonly string _symbChars = "©★☆ټҖΩѬѼϗϬϞѦæԆӬҊѮ¿¶ϾϿΨҨ҂ϘƛѢ";
 
     private void Start()
     {
@@ -216,7 +216,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
         _isAnimating = false;
     }
 #pragma warning disable 0414
-    private string TwitchHelpMessage = "!{0} r1l4 [Moves row 1 left 4 times.] | !{0} c3d5 [Moves column 3 down 5 times.] | #{0} submit [Presses the submit button.]";
+    private string TwitchHelpMessage = "!{0} r1l4 [Moves row 1 left 4 times.] | !{0} c3d5 [Moves column 3 down 5 times.] | !{0} submit [Presses the submit button.]";
 #pragma warning restore 0414
 
     private IEnumerator ProcessTwitchCommand(string command)
