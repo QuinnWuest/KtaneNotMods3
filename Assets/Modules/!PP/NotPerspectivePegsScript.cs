@@ -37,7 +37,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
     private static readonly string[] _flashSounds = new string[] { "PP0", "PP1", "PP2", "PP3", "PP4" };
     private static readonly string[] _colorNames = new string[] { "BLUE", "GREEN", "PURPLE", "RED", "YELLOW" };
 
-    private bool _canInteract = true;
+    private bool _canInteract;
     private int[] _pegColors = new int[25];
     private bool _colorblindMode;
 
@@ -56,6 +56,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
     {
         _moduleId = _moduleIdCounter++;
         _colorblindMode = ColorblindMode.ColorblindModeActive;
+        Module.OnActivate += Activate;
         SetColorblindMode(_colorblindMode);
         for (int i = 0; i < PegSels.Length; i++)
             PegSels[i].OnInteract += PegPress(i);
@@ -84,6 +85,28 @@ public class NotPerspectivePegsScript : MonoBehaviour
             Debug.LogFormat("[Not Perspective Pegs #{0}] With offset: Position {1}, Perspective {2}, Color {3}", _moduleId, (_flashPegPosition[i] + (5 - i)) % 5, (_flashPegPerspective[i] + (5 - i)) % 5, _colorNames[_flashPegColor[i]]);
             Debug.LogFormat("[Not Perspective Pegs #{0}] Resulting peg, with offset: {1}", _moduleId, _pegAnswers[i]);
         }
+    }
+
+    private void Activate()
+    {
+        Audio.PlaySoundAtTransform("PPActivate", transform);
+        StartCoroutine(RaisePegs());
+    }
+
+    private IEnumerator RaisePegs()
+    {
+        var duration = 0.75f;
+        var elapsed = 0f;
+        while (elapsed < duration)
+        {
+            for (int i = 0; i < 5; i++)
+                PegObjs[i].transform.localPosition = new Vector3(PegObjs[i].transform.localPosition.x, PegObjs[i].transform.localPosition.y, Mathf.Lerp(-1.5f, 0f, elapsed / duration));
+            yield return null;
+            elapsed += Time.deltaTime;
+        }
+        for (int i = 0; i < 5; i++)
+            PegObjs[i].transform.localPosition = new Vector3(PegObjs[i].transform.localPosition.x, PegObjs[i].transform.localPosition.y, 0f);
+        _canInteract = true;
     }
 
     private IEnumerator FlashSequence()
@@ -290,6 +313,8 @@ public class NotPerspectivePegsScript : MonoBehaviour
 
     private IEnumerator TwitchHandleForcedSolve()
     {
+        while (!_canInteract)
+            yield return true;
         while (_currentStage != 5)
         {
             PegSels[_pegAnswers[_pressIx]].OnInteract();
