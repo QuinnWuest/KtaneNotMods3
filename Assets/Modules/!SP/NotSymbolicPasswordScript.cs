@@ -255,12 +255,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
                 yield return "sendtochaterror you cant press a button less than 1 times!";
                 yield break;
             }
-            if (val > 16)
-            {
-                yield return "sendtochaterror you cant press a button more than 16 times!";
-                yield break;
-            }
-            for (int j = 0; j < val; j++)
+            for (int j = 0; j < (val % 15); j++)
                 list.Add(sel);
         }
         yield return null;

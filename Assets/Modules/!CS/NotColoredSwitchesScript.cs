@@ -83,15 +83,12 @@ public class NotColoredSwitchesScript : MonoBehaviour
         SetColorblindMode(_colorblindMode);
         for (int i = 0; i < SwitchSels.Length; i++)
             SwitchSels[i].OnInteract += SwitchPress(i);
-        newColors:
         for (int i = 0; i < _switchColors.Length; i++)
         {
             _switchColors[i] = Rnd.Range(0, 6);
             SwitchObjs[i].GetComponent<MeshRenderer>().material.color = _matColors[_switchColors[i]];
             ColorblindText[i].text = _colorNames[_switchColors[i]];
         }
-        if (_switchColors.Distinct().Count() != 5)
-            goto newColors;
         newWord:
         _chosenWord = _wordList[Rnd.Range(0, _wordList.Length)];
         var shuff = Enumerable.Range(0, 6).ToArray().Shuffle();
