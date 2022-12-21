@@ -36,6 +36,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
 
     private static readonly string[] _flashSounds = new string[] { "PP0", "PP1", "PP2", "PP3", "PP4" };
     private static readonly string[] _colorNames = new string[] { "BLUE", "GREEN", "PURPLE", "RED", "YELLOW" };
+    private static readonly string[] _pegPositions = new string[] { "TOP", "TOP-RIGHT", "BOTTOM-RIGHT", "BOTTOM-LEFT", "TOP-LEFT" };
 
     private bool _canInteract;
     private int[] _pegColors = new int[25];
@@ -84,6 +85,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
             Debug.LogFormat("[Not Perspective Pegs #{0}] Without offset: Position {1}, Perspective {2}, Color {3}", _moduleId, _flashPegPosition[i], _flashPegPerspective[i], _colorNames[_flashPegColor[i]]);
             Debug.LogFormat("[Not Perspective Pegs #{0}] With offset: Position {1}, Perspective {2}, Color {3}", _moduleId, (_flashPegPosition[i] + (5 - i)) % 5, (_flashPegPerspective[i] + (5 - i)) % 5, _colorNames[_flashPegColor[i]]);
             Debug.LogFormat("[Not Perspective Pegs #{0}] Resulting peg, with offset: {1}", _moduleId, _pegAnswers[i]);
+            Debug.LogFormat("[Not Perspective Pegs #{0}] Resulting peg position: {1}", _moduleId, _pegPositions[_pegAnswers[i]]);
         }
     }
 
@@ -149,7 +151,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
             else
             {
                 Module.HandleStrike();
-                Debug.LogFormat("[Not Perspective Pegs #{0}] Pressed peg {1} when peg {2} was expected. Strike.", _moduleId, peg, _pegAnswers[_pressIx]);
+                Debug.LogFormat("[Not Perspective Pegs #{0}] Pressed the {1} peg when the {2} peg was expected. Strike.", _moduleId, _pegPositions[peg], _pegPositions[_pegAnswers[_pressIx]]);
                 _pressIx = 0;
                 _flashSequence = StartCoroutine(FlashSequence());
             }
