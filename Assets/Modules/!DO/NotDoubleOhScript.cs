@@ -67,7 +67,7 @@ public class NotDoubleOhScript : MonoBehaviour
             _grid[i] = "ABCDEFGH".Substring(i / 8, 1) + "ABCDEFGH".Substring(i % 8, 1);
         rnd.ShuffleFisherYates(_grid);
         Debug.LogFormat("[Not Double-Oh #{0}] Using rule seed {1}.", _moduleId, rnd.Seed);
-
+        SetButtonFunctions();
         for (int i = 0; i < LeftSegObjs.Length; i++)
         {
             LeftSegObjs[i].SetActive(false);
@@ -152,15 +152,19 @@ public class NotDoubleOhScript : MonoBehaviour
         return false;
     }
 
+    private void SetButtonFunctions()
+    {
+        _functionOrder = Enumerable.Range(0, 8).ToArray().Shuffle();
+        for (int i = 0; i < _functionOrder.Length; i++)
+            Debug.LogFormat("[Not Double-Oh #{0}] Pressing {1} on an {2} digit will {3}", _moduleId, _buttonSymbols[i % 4], i / 4 == 0 ? "even" : "odd", _functionNames[_functionOrder[i]]);
+    }
+
     private void PhaseOne()
     {
         TwitchHelpMessage = "Phase 1: !{0} press horiz1 even [Presses horiz1 on an even digit.] | !{0} press submit [Presses submit button.] | 'press' is optional. Buttons are: horiz1, horiz2, vert1, vert2.";
         _currentPhase = 1;
         _currentPosition = Rnd.Range(0, 64);
         Debug.LogFormat("[Not Double-Oh #{0}] Entering Phase One. Current position: {1}", _moduleId, _grid[_currentPosition]);
-        _functionOrder = Enumerable.Range(0, 8).ToArray().Shuffle();
-        for (int i = 0; i < _functionOrder.Length; i++)
-            Debug.LogFormat("[Not Double-Oh #{0}] Pressing {1} on an {2} digit will {3}", _moduleId, _buttonSymbols[i % 4], i / 4 == 0 ? "even" : "odd", _functionNames[_functionOrder[i]]);
         ShuffleSegments();
     }
 
