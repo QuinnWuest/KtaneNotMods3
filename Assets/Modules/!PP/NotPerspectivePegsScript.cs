@@ -301,7 +301,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
                         list.Add(PegSels[4]);
                         break;
                     default:
-                        break;
+                        yield break;
                 }
             }
             yield return null;
