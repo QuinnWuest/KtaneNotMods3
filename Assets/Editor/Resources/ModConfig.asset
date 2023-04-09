@@ -14,8 +14,8 @@ MonoBehaviour:
   id: NotModdedModulesVol3
   title: Not Modded Modules Volume 3
   author: Quinn Wuest
-  description: "These modules all look very familiar... hmm... maybe not.\n\nNot Modded
-    Modules Volume 3\nMade by Quinn Wuest\n\n- Not Bitmaps\r\n[url=https://ktane.timwi.de/HTML/Not%20Bitmaps.html]Manual
+  description: "These modules all look very familiar... hmm... maybe not.\r\n\r\nNot
+    Modded Modules Volume 3\r\nMade by Quinn Wuest\r\n\r\n- Not Bitmaps\r\n[url=https://ktane.timwi.de/HTML/Not%20Bitmaps.html]Manual
     HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Not%20Bitmaps.pdf]Manual PDF[/url]\r\n-
     Not Colored Switches\r\n[url=https://ktane.timwi.de/HTML/Not%20Colored%20Switches.html]Manual
     HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Not%20Colored%20Switches.pdf]Manual
@@ -25,7 +25,12 @@ MonoBehaviour:
     HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Not%20Perspective%20Pegs.pdf]Manual
     PDF[/url]\r\n- Not Symbolic Password\r\n[url=https://ktane.timwi.de/HTML/Not%20Symbolic%20Password.html]Manual
     HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Not%20Symbolic%20Password.pdf]Manual
-    PDF[/url]"
+    PDF[/url]\r\n- Not The Screw\r\n[url=https://ktane.timwi.de/HTML/Not%20The%20Screw.html]Manual
+    HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Not%20The%20Screw.pdf]Manual PDF[/url]\r\n-
+    Quadruple Simpleton't\r\n[url=https://ktane.timwi.de/HTML/Quadruple%20Simpleton%27t.html]Manual
+    HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Quadruple%20Simpleton%27t.pdf]Manual
+    PDF[/url]\r\n- Recolour Flash\r\n[url=https://ktane.timwi.de/HTML/Recolour%20Flash.html]Manual
+    HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Recolour%20Flash.pdf]Manual PDF[/url]"
   version: 1.0
   outputFolder: build
   previewImage: {fileID: 2800000, guid: 76105a0f84dcf2141a8bc2ca4cc792b7, type: 3}
