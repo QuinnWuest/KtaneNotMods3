@@ -516,6 +516,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 114789938221150202, guid: 6f83d4e8a21f13e49a4635dfda51ce53,
+        type: 2}
+      propertyPath: AllowSelectionWrapX
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 6f83d4e8a21f13e49a4635dfda51ce53, type: 2}
   m_IsPrefabParent: 0
