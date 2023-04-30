@@ -266,7 +266,7 @@ public partial class NotTheScrewModule : MonoBehaviour
         for (int i = 0; i < commands.Length; i++)
             if (matches[i].All(x => !x.Success))
             {
-                yield return "sendtochaterror Invalid command at position " + (i + 1);
+                yield return "sendtochaterror Invalid command at position " + (i + 1) + ": " + commands[i];
                 yield break;
             }
         yield return null;
