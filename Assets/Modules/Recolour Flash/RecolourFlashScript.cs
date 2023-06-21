@@ -451,10 +451,10 @@ public class RecolourFlashScript : MonoBehaviour
     }
     private IEnumerator PressOnParity(int parity, KMSelectable btn, float delay = 0.1f)
     {
-        yield return new WaitUntil(() => (int)BombInfo.GetTime() % 2 != parity % 2);
+        yield return new WaitUntil(() => (int)BombInfo.GetTime() % 2 == parity % 2);
         int curParity = (int)BombInfo.GetTime() % 2;
         yield return Press(btn, delay);
-        yield return new WaitUntil(() => (int)BombInfo.GetTime() % 2 != curParity);
+        yield return new WaitUntil(() => (int)BombInfo.GetTime() % 2 == curParity);
     }
     private IEnumerator DoubleTap(KMSelectable btn, float delay = 0.1f)
     {
