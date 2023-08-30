@@ -50,6 +50,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
     private int[] _pegAnswers = new int[5];
     private int _currentStage;
     private Coroutine _flashSequence;
+    private Coroutine _timer;
     private int _pressIx;
     private bool _hasInteracted;
 
@@ -113,6 +114,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
 
     private IEnumerator FlashSequence()
     {
+        yield return new WaitForSeconds(0.75f);
         while (true)
         {
             for (int i = 0; i < _currentStage + 1; i++)
@@ -126,6 +128,20 @@ public class NotPerspectivePegsScript : MonoBehaviour
             }
             yield return new WaitForSeconds(0.8f);
         }
+    }
+
+    private IEnumerator Timer()
+    {
+        var elapsed = 0f;
+        var duration = 10f;
+        while (elapsed < duration)
+        {
+            yield return null;
+            elapsed += Time.deltaTime;
+        }
+        if (_flashSequence != null)
+            StopCoroutine(_flashSequence);
+        _flashSequence = StartCoroutine(FlashSequence());
     }
 
     private KMSelectable.OnInteractHandler PegPress(int peg)
@@ -146,6 +162,9 @@ public class NotPerspectivePegsScript : MonoBehaviour
             //Answer checking
             if (peg == _pegAnswers[_pressIx])
             {
+                if (_timer != null)
+                    StopCoroutine(_timer);
+                _timer = StartCoroutine(Timer());
                 _pressIx++;
             }
             else
@@ -153,6 +172,8 @@ public class NotPerspectivePegsScript : MonoBehaviour
                 Module.HandleStrike();
                 Debug.LogFormat("[Not Perspective Pegs #{0}] Pressed the {1} peg when the {2} peg was expected. Strike.", _moduleId, _pegPositions[peg], _pegPositions[_pegAnswers[_pressIx]]);
                 _pressIx = 0;
+                if (_timer != null)
+                    StopCoroutine(_timer);
                 _flashSequence = StartCoroutine(FlashSequence());
             }
             if (_pressIx == _currentStage + 1)
@@ -160,6 +181,8 @@ public class NotPerspectivePegsScript : MonoBehaviour
                 Debug.LogFormat("[Not Perspective Pegs #{0}] Completed Stage {1}.", _moduleId, _currentStage + 1);
                 _pressIx = 0;
                 _currentStage++;
+                if (_timer != null)
+                    StopCoroutine(_timer);
                 if (_currentStage != 5)
                     _flashSequence = StartCoroutine(FlashSequence());
                 else

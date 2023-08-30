@@ -39,32 +39,32 @@ public class RecolourFlashScript : MonoBehaviour
 
     private int[][] _semaphores = new int[26][]
     {
-        new int[2]{4, 5 }, // A
-        new int[2]{4, 6 }, // B
-        new int[2]{4, 7 }, // C
-        new int[2]{4, 0 }, // D
-        new int[2]{4, 1 }, // E
-        new int[2]{4, 2 }, // F
-        new int[2]{4, 3 }, // G
-        new int[2]{5, 6 }, // H
-        new int[2]{5, 7 }, // I
-        new int[2]{0, 2 }, // J
-        new int[2]{5, 0 }, // K
-        new int[2]{5, 1 }, // L
-        new int[2]{5, 2 }, // M
-        new int[2]{5, 3 }, // N
-        new int[2]{6, 7 }, // O
-        new int[2]{0, 6 }, // P
-        new int[2]{1, 6 }, // Q
-        new int[2]{2, 6 }, // R
-        new int[2]{3, 6 }, // S
-        new int[2]{0, 7 }, // T
-        new int[2]{1, 7 }, // U
-        new int[2]{0, 3 }, // V
-        new int[2]{1, 2 }, // W
-        new int[2]{1, 3 }, // X
-        new int[2]{2, 7 }, // Y
-        new int[2]{2, 3 }, // Z
+        new int[2] { 4, 5 }, // A
+        new int[2] { 4, 6 }, // B
+        new int[2] { 4, 7 }, // C
+        new int[2] { 4, 0 }, // D
+        new int[2] { 4, 1 }, // E
+        new int[2] { 4, 2 }, // F
+        new int[2] { 4, 3 }, // G
+        new int[2] { 5, 6 }, // H
+        new int[2] { 5, 7 }, // I
+        new int[2] { 0, 2 }, // J
+        new int[2] { 5, 0 }, // K
+        new int[2] { 5, 1 }, // L
+        new int[2] { 5, 2 }, // M
+        new int[2] { 5, 3 }, // N
+        new int[2] { 6, 7 }, // O
+        new int[2] { 0, 6 }, // P
+        new int[2] { 1, 6 }, // Q
+        new int[2] { 2, 6 }, // R
+        new int[2] { 3, 6 }, // S
+        new int[2] { 0, 7 }, // T
+        new int[2] { 1, 7 }, // U
+        new int[2] { 0, 3 }, // V
+        new int[2] { 1, 2 }, // W
+        new int[2] { 1, 3 }, // X
+        new int[2] { 2, 7 }, // Y
+        new int[2] { 2, 3 }, // Z
     };
 
     private int[][] _flashes = new int[8][]
@@ -454,7 +454,7 @@ public class RecolourFlashScript : MonoBehaviour
         yield return new WaitUntil(() => (int)BombInfo.GetTime() % 2 == parity % 2);
         int curParity = (int)BombInfo.GetTime() % 2;
         yield return Press(btn, delay);
-        yield return new WaitUntil(() => (int)BombInfo.GetTime() % 2 == curParity);
+        yield return new WaitUntil(() => (int)BombInfo.GetTime() % 2 != curParity);
     }
     private IEnumerator DoubleTap(KMSelectable btn, float delay = 0.1f)
     {
@@ -496,8 +496,8 @@ public class RecolourFlashScript : MonoBehaviour
     {
         int goalRow = goal / 4;
         int goalCol = goal % 4;
-        int rowParity = ((_curRow + 3) % 4) == goalRow ? 0 : 1; //If the goal is directly below us, go down. Otherwise, it doesn't rly matter.
-        int colParity = ((_curCol + 3) % 4) == goalCol ? 0 : 1; //If the goal is directly to the right of us, go right, otherwise it doesn't rly matter again.
+        int rowParity = ((_curRow + 3) % 4) == goalRow ? 1 : 0;
+        int colParity = ((_curCol + 3) % 4) == goalCol ? 1 : 0;
         while (_curRow != goalRow)
             yield return PressOnParity(rowParity, NoButton);
         while (_curCol != goalCol)
