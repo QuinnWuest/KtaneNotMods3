@@ -139,6 +139,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
             yield return null;
             elapsed += Time.deltaTime;
         }
+        _pressIx = 0;
         if (_flashSequence != null)
             StopCoroutine(_flashSequence);
         _flashSequence = StartCoroutine(FlashSequence());
