@@ -15,6 +15,7 @@ public class NotBitmapsScript : MonoBehaviour
 
     public GameObject Screen;
     public Mesh PlaneMesh;
+    public KMSelectable ScreenSel;
     public KMSelectable[] ButtonSels;
     public MeshRenderer Bitmap;
 
@@ -61,6 +62,7 @@ public class NotBitmapsScript : MonoBehaviour
     public KMColorblindMode ColorblindMode;
     public TextMesh ColorblindText;
     private bool _colorblindMode;
+    private bool _paused;
 
     struct BitmapInfo
     {
@@ -75,6 +77,7 @@ public class NotBitmapsScript : MonoBehaviour
         _moduleId = _moduleIdCounter++;
         for (int i = 0; i < ButtonSels.Length; i++)
             ButtonSels[i].OnInteract += ButtonPress(i);
+        ScreenSel.OnInteract += ScreenPress;
         _colorblindMode = ColorblindMode.ColorblindModeActive;
         SetColorblindMode(_colorblindMode);
 
@@ -97,6 +100,14 @@ public class NotBitmapsScript : MonoBehaviour
             _correctButtons[i] = DetermineCorrectPress(_bitmaps[i].CenterX, _bitmaps[i].CenterY, _bitmaps[i].Which);
             Debug.LogFormat("[Not Bitmaps #{0}] Press {1} while the {2} bitmap is shown.", _moduleId, _correctButtons[i] + 1, _colorNames[_colorIxs[i]]);
         }
+    }
+
+    private bool ScreenPress()
+    {
+        ScreenSel.AddInteractionPunch(0.5f);
+        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, ScreenSel.transform);
+        _paused = !_paused;
+        return false;
     }
 
     private void SetColorblindMode(bool mode)
@@ -193,7 +204,10 @@ public class NotBitmapsScript : MonoBehaviour
                     continue;
                 Bitmap.material.mainTexture = _bitmapTextures[_bitmapIx];
                 ColorblindText.text = _colorNames[_colorIxs[_bitmapIx]].ToUpperInvariant();
-                yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(1.2f);
+                while (_paused)
+                    yield return null;
+                yield return new WaitForSeconds(0.3f);
             }
         }
     }
@@ -330,7 +344,7 @@ public class NotBitmapsScript : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} press green 2 [Press button 2 while the green bitmap is shown.] | Bitmap colors are: red, green, blue, yellow, cyan, magenta. | !{0} colorblind [Toggles colorblind mode.] | 'press' is optional.";
+    private readonly string TwitchHelpMessage = @"!{0} press green 2 [Press button 2 while the green bitmap is shown.] | !{0} pause magenta [Pause the cycle while the magenta bitmap is shown.] | !{0} unpause [Unpause the cycle.] | Bitmap colors are: red, green, blue, yellow, cyan, magenta. | !{0} colorblind [Toggles colorblind mode.] | 'press' is optional.";
 #pragma warning restore 414
 
     // "red", "green", "blue", "yellow", "cyan", "magenta" 
@@ -344,31 +358,89 @@ public class NotBitmapsScript : MonoBehaviour
             SetColorblindMode(_colorblindMode);
             yield break;
         }
-        m = Regex.Match(command, @"^\s*(?:press\s+)?((?<red>red)|(?<green>green)|(?<blue>blue)|(?<yellow>yellow)|(?<cyan>cyan)|(?<magenta>magenta))\s+([1-4])\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-        if (!m.Success)
-            yield break;
-        int color = -1;
-        if (m.Groups["red"].Success)
-            color = 0;
-        else if (m.Groups["green"].Success)
-            color = 1;
-        else if (m.Groups["blue"].Success)
-            color = 2;
-        else if (m.Groups["yellow"].Success)
-            color = 3;
-        else if (m.Groups["cyan"].Success)
-            color = 4;
-        else if (m.Groups["magenta"].Success)
-            color = 5;
-        if (!_colorIxs.Contains(color))
+        m = Regex.Match(command, @"^\s*(un)?pause\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (m.Success)
         {
-            yield return "sendtochaterror The color " + _colorNames[color] + " is not present in the cycling bitmaps!";
+            yield return null;
+            ScreenSel.OnInteract();
             yield break;
         }
-        yield return null;
-        while (_colorIxs[_bitmapIx] != color)
+        m = Regex.Match(command, @"^\s*(?:press\s+)?((?<red>red)|(?<green>green)|(?<blue>blue)|(?<yellow>yellow)|(?<cyan>cyan)|(?<magenta>magenta))\s+([1-4])\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (m.Success)
+        {
+            int color = -1;
+            if (m.Groups["red"].Success)
+                color = 0;
+            else if (m.Groups["green"].Success)
+                color = 1;
+            else if (m.Groups["blue"].Success)
+                color = 2;
+            else if (m.Groups["yellow"].Success)
+                color = 3;
+            else if (m.Groups["cyan"].Success)
+                color = 4;
+            else if (m.Groups["magenta"].Success)
+                color = 5;
+            int ix = Array.IndexOf(_colorIxs, color);
+            if (ix == -1)
+            {
+                yield return "sendtochaterror The color " + _colorNames[color] + " is not present in the cycling bitmaps!";
+                yield break;
+            }
+            if (_hasBeenSatisfied[ix])
+            {
+                yield return "sendtochaterror The color " + _colorNames[color] + " has already been submitted!";
+                yield break;
+            }
             yield return null;
-        ButtonSels[int.Parse(m.Groups[2].Value) - 1].OnInteract();
+            if (_paused && _colorIxs[_bitmapIx] != color)
+            {
+                ScreenSel.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            while (_colorIxs[_bitmapIx] != color)
+                yield return null;
+            ButtonSels[int.Parse(m.Groups[2].Value) - 1].OnInteract();
+            yield break;
+        }
+        m = Regex.Match(command, @"^\s*(?:pause\s+)?((?<red>red)|(?<green>green)|(?<blue>blue)|(?<yellow>yellow)|(?<cyan>cyan)|(?<magenta>magenta))$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (m.Success)
+        {
+            int color = -1;
+            if (m.Groups["red"].Success)
+                color = 0;
+            else if (m.Groups["green"].Success)
+                color = 1;
+            else if (m.Groups["blue"].Success)
+                color = 2;
+            else if (m.Groups["yellow"].Success)
+                color = 3;
+            else if (m.Groups["cyan"].Success)
+                color = 4;
+            else if (m.Groups["magenta"].Success)
+                color = 5;
+            int ix = Array.IndexOf(_colorIxs, color);
+            if (ix == -1)
+            {
+                yield return "sendtochaterror The color " + _colorNames[color] + " is not present in the cycling bitmaps!";
+                yield break;
+            }
+            if (_hasBeenSatisfied[ix])
+            {
+                yield return "sendtochaterror The color " + _colorNames[color] + " has already been submitted!";
+                yield break;
+            }
+            yield return null;
+            if (_paused)
+            {
+                ScreenSel.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            while (_colorIxs[_bitmapIx] != color)
+                yield return null;
+            ScreenSel.OnInteract();
+            yield break;
+        }
     }
 
     private IEnumerator TwitchHandleForcedSolve()
