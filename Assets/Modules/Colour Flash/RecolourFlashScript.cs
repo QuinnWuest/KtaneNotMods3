@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
-using RecolourFlash;
+using KModkit;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 public class RecolourFlashScript : MonoBehaviour
 {
@@ -15,78 +16,60 @@ public class RecolourFlashScript : MonoBehaviour
     public KMSelectable NoButton;
     public TextMesh ScreenText;
     public GameObject[] ButtonObjs;
+    private readonly Coroutine[] _pressAnimations = new Coroutine[2];
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
     private bool _moduleSolved;
 
-    private static readonly string[] _chartWords = new string[] { "DONE", "ADD", "FIND", "EAST", "PORT", "BOOM", "LIME", "ECHO", "CALL", "LOOK", "ZERO", "XRAY", "YES", "HELP", "BEEP", "TRUE", "MIKE", "EDGE", "RED", "WORD", "WORK", "TEST", "JINX", "GOLF", "TALK", "SIX", "LIST", "MATH", "NEXT", "READ", "LIMA", "FOUR" };
-    private static readonly string[] _colourNames = new string[] { "RED", "YELLOW", "GREEN", "WHITE", "BLUE", "MAGENTA" };
-    private static readonly Color32[] _colours = new Color32[] { new Color32(255, 0, 0, 255), new Color32(255, 255, 0, 255), new Color32(0, 255, 0, 255), new Color32(255, 255, 255, 255), new Color32(0, 0, 255, 255), new Color32(255, 0, 255, 255) };
-
-    private int _lastTimerSecond;
-    private bool _isEvenDigit;
-    private int _pressesDuringTimerTick;
-
-    private char[] _field;
-    private const int _w = 4;
-    private const int _h = 4;
-    private string _solution;
-    private int _solutionStart;
-    private int _solutionEnd;
-    private int? _selectedStart;
-    private int? _selectedEnd;
-
-    private int[][] _semaphores = new int[26][]
+    public enum Colour
     {
-        new int[2] { 4, 5 }, // A
-        new int[2] { 4, 6 }, // B
-        new int[2] { 4, 7 }, // C
-        new int[2] { 4, 0 }, // D
-        new int[2] { 4, 1 }, // E
-        new int[2] { 4, 2 }, // F
-        new int[2] { 4, 3 }, // G
-        new int[2] { 5, 6 }, // H
-        new int[2] { 5, 7 }, // I
-        new int[2] { 0, 2 }, // J
-        new int[2] { 5, 0 }, // K
-        new int[2] { 5, 1 }, // L
-        new int[2] { 5, 2 }, // M
-        new int[2] { 5, 3 }, // N
-        new int[2] { 6, 7 }, // O
-        new int[2] { 0, 6 }, // P
-        new int[2] { 1, 6 }, // Q
-        new int[2] { 2, 6 }, // R
-        new int[2] { 3, 6 }, // S
-        new int[2] { 0, 7 }, // T
-        new int[2] { 1, 7 }, // U
-        new int[2] { 0, 3 }, // V
-        new int[2] { 1, 2 }, // W
-        new int[2] { 1, 3 }, // X
-        new int[2] { 2, 7 }, // Y
-        new int[2] { 2, 3 }, // Z
-    };
+        Red,
+        Yellow,
+        Green,
+        Blue,
+        Magenta,
+        White
+    }
 
-    private int[][] _flashes = new int[8][]
+    public class ColourDisplay : IEquatable<ColourDisplay>
     {
-        new int[2],
-        new int[2],
-        new int[2],
-        new int[2],
-        new int[2],
-        new int[2],
-        new int[2],
-        new int[2]
+        public Colour Word;
+        public Colour Colour;
+
+        public ColourDisplay(Colour word, Colour colour)
+        {
+            Word = word;
+            Colour = colour;
+        }
+
+        public bool Equals(ColourDisplay other)
+        {
+            return other != null && other.Word == Word && other.Colour == Colour;
+        }
+    }
+
+    private static readonly Color32[] _possibleColors = new Color32[]
+    {
+        new Color32(255, 0, 0, 255),
+        new Color32(255, 255, 0, 255),
+        new Color32(0, 255, 0, 255),
+        new Color32(0, 0, 255, 255),
+        new Color32(255, 0, 255, 255),
+        new Color32(255, 255, 255, 255)
     };
-
-    private int _curPos;
-    private int _curRow;
-    private int _curCol;
-    private bool _yesPressed;
-    private int _curFlash;
-
-    private Coroutine _flashSequence;
-    private Coroutine[] _pressAnimations = new Coroutine[2];
+    private Colour?[] _grid = new Colour?[36];
+    private int _direction;
+    private List<ColourDisplay[]> _displays = new List<ColourDisplay[]>();
+    private List<bool> _solutions;
+    private Coroutine _screenCycle;
+    private List<ColourDisplay> _recolouredCells = new List<ColourDisplay>();
+    private List<ColourDisplay> _stageTwoDisplays = new List<ColourDisplay>();
+    private int _stageOneIndex;
+    private int _stageTwoIndex;
+    private int _overallStage;
+    private const int _stageOneCap = 6;
+    private const int _stageTwoCap = 9;
 
     private void Start()
     {
@@ -96,31 +79,168 @@ public class RecolourFlashScript : MonoBehaviour
         YesButton.OnInteractEnded += YesRelease;
         NoButton.OnInteractEnded += NoRelease;
 
-        _solution = _chartWords[Rnd.Range(0, _chartWords.Length)];
-        GenerateWordSearch();
-        _curRow = Rnd.Range(0, 4);
-        _curCol = Rnd.Range(0, 4);
-        _curPos = CalcCurPos();
+        var sn = BombInfo.GetSerialNumber();
+        if (sn[0] >= 'A' && sn[0] <= 'Z')
+        {
+            if (sn[1] >= 'A' && sn[1] <= 'Z')
+                _direction = 0; // letter letter
+            else
+                _direction = 3; // letter number
+        }
+        else
+        {
+            if (sn[1] >= 'A' && sn[1] <= 'Z')
+                _direction = 1; // number letter
+            else
+                _direction = 2; // number number
+        }
+        Debug.LogFormat("[Recolour Flash #{0}] The serial number starts with {1}-{2}. Direction is {3}.", _moduleId, (sn[0] >= 'A' && sn[0] <= 'Z') ? "LETTER" : "NUMBER", (sn[1] >= 'A' && sn[1] <= 'Z') ? "LETTER" : "NUMBER", new string[] { "UP", "RIGHT", "DOWN", "LEFT" }[_direction]);
 
-        Debug.LogFormat("[Recolour Flash #{0}] The chosen word is {1}.", _moduleId, _solution);
-        Debug.LogFormat("[Recolour Flash #{0}] Starting position: {1}", _moduleId, CalcCoord(_curPos));
-        GenerateSemaphoreFlash();
-        _flashSequence = StartCoroutine(FlashSequence());
+        TooManyStageOneIters:
+        int iter = 0;
+        var posShuffle = Enumerable.Range(0, 36).ToArray().Shuffle();
+        var logList = new List<string>();
+        _solutions = new List<bool>();
+        _grid = new Colour?[36];
+        _displays = new List<ColourDisplay[]>();
+        _recolouredCells = new List<ColourDisplay>();
 
-        Debug.LogFormat("[Recolour Flash #{0}] Solution start: {1} > Solution end: {2}.", _moduleId, CalcCoord(_solutionStart), CalcCoord(_solutionEnd));
+        NextSequence:
+        if (iter == _stageOneCap)
+            goto TooManyStageOneIters;
+
+        NewDisplays:
+        var position = new ColourDisplay((Colour)(posShuffle[iter] / 6), (Colour)(posShuffle[iter] % 6));
+        var colouring = new ColourDisplay((Colour)Rnd.Range(0, 6), (Colour)Rnd.Range(0, 6));
+        if (position.Equals(colouring))
+            goto NewDisplays;
+
+        _displays.Add(new ColourDisplay[2] { position, colouring });
+        int rowA = (int)position.Colour;
+        int colA = (int)position.Word;
+        int rowB = _direction == 0 ? (rowA == 0 ? 5 : rowA - 1) : _direction == 2 ? (rowA == 5 ? 0 : rowA + 1) : rowA;
+        int colB = _direction == 1 ? (colA == 5 ? 0 : colA + 1) : _direction == 3 ? (colA == 0 ? 5 : colA - 1) : colA;
+        int posA = rowA * 6 + colA;
+        int posB = rowB * 6 + colB;
+        var oldGrid = _grid.ToArray();
+        _grid[posA] = colouring.Word;
+        _grid[posB] = colouring.Colour;
+        logList.Add(string.Format("[Recolour Flash #{0}] At position {1}-{2}, coloured cell {3}.", _moduleId, (Colour)colA, (Colour)rowA, _grid[posA]));
+        logList.Add(string.Format("[Recolour Flash #{0}] At position {1}-{2}, coloured cell {3}.", _moduleId, (Colour)colB, (Colour)rowB, _grid[posB]));
+        bool hasBeenRecolored = CheckForRecolour(_grid, oldGrid);
+        if (!hasBeenRecolored)
+        {
+            logList.Add(string.Format("[Recolour Flash #{0}] No recolour. Next sequence.", _moduleId));
+            _solutions.Add(false);
+            iter++;
+            goto NextSequence;
+        }
+
+        logList.Add(string.Format("[Recolour Flash #{0}] Recolour! {1}.", _moduleId, _recolouredCells.Select(i => i.Word + " was replaced by " + i.Colour).Join(", and ")));
+        _solutions.Add(true);
+        for (int i = 0; i < logList.Count; i++)
+            Debug.Log(logList[i]);
+
+        TooManyStageTwoIters:
+        _stageTwoDisplays = new List<ColourDisplay>();
+        int ixA = -1;
+        int ixB = -1;
+        for (int i = 0; i < 36; i++)
+            if (i / 6 != i % 6)
+                _stageTwoDisplays.Add(new ColourDisplay((Colour)(i % 6), (Colour)(i / 6)));
+        _stageTwoDisplays.Shuffle();
+        for (int i = 0; i < _stageTwoDisplays.Count; i++)
+        {
+            if (_stageTwoDisplays[i].Equals(_recolouredCells[0]))
+                ixA = i;
+            if (_recolouredCells.Count == 2 && _stageTwoDisplays[i].Equals(_recolouredCells[1]))
+                ixB = i;
+        }
+        if (ixB == -1)
+            ixB = ixA;
+        if (ixA > _stageTwoCap && ixB > _stageTwoCap)
+            goto TooManyStageTwoIters;
+        _screenCycle = StartCoroutine(ScreenCycle());
+    }
+
+    private bool CheckForRecolour(Colour?[] a, Colour?[] b)
+    {
+        bool match = false;
+        for (int i = 0; i < a.Length; i++)
+            if (a[i] != null && b[i] != null && a[i] != b[i])
+            {
+                _recolouredCells.Add(new ColourDisplay((Colour)a[i], (Colour)b[i]));
+                match = true;
+            }
+        return match;
+    }
+
+    private IEnumerator ScreenCycle()
+    {
+        while (!_moduleSolved)
+        {
+            ScreenText.text = _displays[_stageOneIndex][0].Word.ToString();
+            ScreenText.color = _possibleColors[(int)_displays[_stageOneIndex][0].Colour];
+            yield return new WaitForSeconds(0.75f);
+            ScreenText.text = _displays[_stageOneIndex][1].Word.ToString();
+            ScreenText.color = _possibleColors[(int)_displays[_stageOneIndex][1].Colour];
+            yield return new WaitForSeconds(0.75f);
+            ScreenText.text = "";
+            yield return new WaitForSeconds(0.75f);
+        }
+        yield break;
+    }
+
+    private void StrikeReset()
+    {
+        _overallStage = 0;
+        _stageTwoIndex = 0;
+        _stageOneIndex = 0;
+        if (_screenCycle != null)
+            StopCoroutine(_screenCycle);
+        _screenCycle = StartCoroutine(ScreenCycle());
+        Module.HandleStrike();
     }
 
     private bool YesPress()
     {
         YesButton.AddInteractionPunch(0.5f);
-        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
+        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, YesButton.transform);
         if (_pressAnimations[0] != null)
             StopCoroutine(_pressAnimations[0]);
         _pressAnimations[0] = StartCoroutine(PressAnimation(0, true));
-        if (!_moduleSolved)
+        if (_moduleSolved)
+            return false;
+        if (_overallStage == 0)
         {
-            _yesPressed = true;
-            _pressesDuringTimerTick++;
+            if (_solutions[_stageOneIndex])
+            {
+                Debug.LogFormat("[Recolour Flash #{0}] Correctly pressed 'YES' upon a recolour.", _moduleId);
+                if (_screenCycle != null)
+                    StopCoroutine(_screenCycle);
+                _overallStage = 1;
+                ScreenText.text = _stageTwoDisplays[_stageTwoIndex].Word.ToString();
+                ScreenText.color = _possibleColors[(int)_stageTwoDisplays[_stageTwoIndex].Colour];
+            }
+            else
+            {
+                Debug.LogFormat("[Recolour Flash #{0}] Incorrectly pressed 'YES' due to an absence of a recolour. Strike.", _moduleId);
+                StrikeReset();
+            }
+        }
+        else if (_overallStage == 1)
+        {
+            if (_recolouredCells.Any(i => i.Equals(_stageTwoDisplays[_stageTwoIndex])))
+            {
+                Debug.LogFormat("[Recolour Flash #{0}] Correctly pressed 'YES' when a recolour was displayed. Module solved.", _moduleId);
+                _moduleSolved = true;
+                Module.HandlePass();
+            }
+            else
+            {
+                Debug.LogFormat("[Recolour Flash #{0}] Incorrectly pressed 'YES' because a recolour was not displayed. Strike .", _moduleId);
+                StrikeReset();
+            }
         }
         return false;
     }
@@ -128,14 +248,42 @@ public class RecolourFlashScript : MonoBehaviour
     private bool NoPress()
     {
         NoButton.AddInteractionPunch(0.5f);
-        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
+        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, NoButton.transform);
         if (_pressAnimations[1] != null)
             StopCoroutine(_pressAnimations[1]);
         _pressAnimations[1] = StartCoroutine(PressAnimation(1, true));
-        if (!_moduleSolved)
+        if (_moduleSolved)
+            return false;
+        if (_overallStage == 0)
         {
-            _yesPressed = false;
-            _pressesDuringTimerTick++;
+            if (!_solutions[_stageOneIndex])
+            {
+                Debug.LogFormat("[Recolour Flash #{0}] Correctly pressed 'NO' due to the absence of a recolour.", _moduleId);
+                if (_screenCycle != null)
+                    StopCoroutine(_screenCycle);
+                _stageOneIndex++;
+                _screenCycle = StartCoroutine(ScreenCycle());
+            }
+            else
+            {
+                Debug.LogFormat("[Recolour Flash #{0}] Incorrectly pressed 'NO' when a recolour took place. Strike.", _moduleId);
+                StrikeReset();
+            }
+        }
+        else if (_overallStage == 1)
+        {
+            if (!_recolouredCells.Any(i => i.Equals(_stageTwoDisplays[_stageTwoIndex])))
+            {
+                Debug.LogFormat("[Recolour Flash #{0}] Correctly pressed 'NO' because a recolour was not displayed.", _moduleId);
+                _stageTwoIndex++;
+                ScreenText.text = _stageTwoDisplays[_stageTwoIndex].Word.ToString();
+                ScreenText.color = _possibleColors[(int)_stageTwoDisplays[_stageTwoIndex].Colour];
+            }
+            else
+            {
+                Debug.LogFormat("[Recolour Flash #{0}] Incorrectly pressed 'NO' when a recolour was displayed. Strike.", _moduleId);
+                StrikeReset();
+            }
         }
         return false;
     }
@@ -167,343 +315,69 @@ public class RecolourFlashScript : MonoBehaviour
         }
     }
 
-    private int CalcCurPos()
-    {
-        return (_curRow * 4) + _curCol;
-    }
-
-    private string CalcCoord(int pos)
-    {
-        string s = "";
-        s += "ABCD"[pos % 4];
-        s += "1234"[pos / 4];
-        return s;
-    }
-
-    private void Update()
-    {
-        var curTime = (int)BombInfo.GetTime() % 2;
-        if (_lastTimerSecond != curTime)
-        {
-            _lastTimerSecond = curTime;
-            _isEvenDigit = _lastTimerSecond % 2 == 0;
-            if (_pressesDuringTimerTick > 0)
-            {
-                if (_pressesDuringTimerTick == 1)
-                {
-                    if (_yesPressed)
-                    {
-                        if (!_isEvenDigit) // As the press was the previous one
-                        {
-                            _curCol = (_curCol + 1) % 4;
-                            _curPos = CalcCurPos();
-                            Debug.LogFormat("[Recolour Flash #{0}] Pressed YES on an even digit. Moving right to {1}.", _moduleId, CalcCoord(_curPos));
-                        }
-                        else
-                        {
-                            _curCol = (_curCol + 3) % 4;
-                            _curPos = CalcCurPos();
-                            Debug.LogFormat("[Recolour Flash #{0}] Pressed YES on an odd digit. Moving left to {1}.", _moduleId, CalcCoord(_curPos));
-                        }
-
-                    }
-                    else
-                    {
-                        if (!_isEvenDigit) // As the press was the previous one
-                        {
-                            _curRow = (_curRow + 1) % 4;
-                            _curPos = CalcCurPos();
-                            Debug.LogFormat("[Recolour Flash #{0}] Pressed NO on an even digit. Moving down to {1}.", _moduleId, CalcCoord(_curPos));
-                        }
-                        else
-                        {
-                            _curRow = (_curRow + 3) % 4;
-                            _curPos = CalcCurPos();
-                            Debug.LogFormat("[Recolour Flash #{0}] Pressed NO on an odd digit. Moving up to {1}.", _moduleId, CalcCoord(_curPos));
-                        }
-                    }
-                    Audio.PlaySoundAtTransform("SemaphorePress", transform);
-                    GenerateSemaphoreFlash();
-                }
-                else
-                {
-                    Debug.LogFormat("[Recolour Flash #{0}] More than one press during timer tick. Submit current position.", _moduleId, CalcCoord(_curPos));
-                    if (_selectedStart == null)
-                    {
-                        _selectedStart = _curPos;
-                        Audio.PlaySoundAtTransform("WSPress", transform);
-                        Debug.LogFormat("[Recolour Flash #{0}] Selected {1} as the starting cell.", _moduleId, CalcCoord(_curPos));
-                    }
-                    else if (_selectedStart == _curPos)
-                    {
-                        _selectedStart = null;
-                        Audio.PlaySoundAtTransform("WSDeselect", transform);
-                        Debug.LogFormat("[Recolour Flash #{0}] Deselected {1} as the starting cell.", _moduleId, CalcCoord(_curPos));
-                    }
-                    else
-                    {
-                        _selectedEnd = _curPos;
-                        Debug.LogFormat("[Recolour Flash #{0}] Selected {1} as the ending cell.", _moduleId, CalcCoord(_curPos));
-                        if (_selectedStart == _solutionStart && _selectedEnd == _solutionEnd)
-                        {
-                            Debug.LogFormat("[Recolour Flash #{0}] Successfully selected {1}. Module solved.", _moduleId, _solution);
-                            StartCoroutine(SolveAnimation());
-                        }
-                        else
-                        {
-                            Debug.LogFormat("[Recolour Flash #{0}] Did not select {1}. Strike.", _moduleId, _solution);
-                            StartCoroutine(StrikeAnimation());
-                        }
-                    }
-                }
-                _pressesDuringTimerTick = 0;
-            }
-        }
-    }
-
-    private IEnumerator SolveAnimation()
-    {
-        Audio.PlaySoundAtTransform("WSCorrect", transform);
-        yield return new WaitForSeconds(0.5f);
-        _moduleSolved = true;
-        Module.HandlePass();
-        StopCoroutine(_flashSequence);
-        ScreenText.text = _solution;
-        ScreenText.color = new Color32(255, 255, 255, 255);
-    }
-
-    private IEnumerator StrikeAnimation()
-    {
-        Audio.PlaySoundAtTransform("WSWrong", transform);
-        yield return new WaitForSeconds(0.5f);
-        Module.HandleStrike();
-        _selectedStart = null;
-        _selectedEnd = null;
-    }
-
-    private IEnumerator FlashSequence()
-    {
-        while (!_moduleSolved)
-        {
-            ScreenText.text = _colourNames[_flashes[_curFlash][0]];
-            ScreenText.color = _colours[_flashes[_curFlash][1]];
-            if (_curFlash == 0)
-            {
-                for (int i = 0; i < 7; i++)
-                {
-                    if (i % 2 == 0)
-                    {
-                        ScreenText.text = _colourNames[_flashes[_curFlash][0]];
-                        ScreenText.color = _colours[_flashes[_curFlash][1]];
-                    }
-                    else
-                    {
-                        ScreenText.text = "";
-                    }
-                    yield return new WaitForSeconds(0.1f);
-                }
-            }
-            _curFlash = (_curFlash + 1) % 8;
-            yield return new WaitForSeconds(0.5f);
-        }
-    }
-
-    private void GenerateSemaphoreFlash()
-    {
-        var curLetter = Array.IndexOf("ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray(), _field[_curPos]);
-        for (int i = 0; i < _flashes.Length; i++)
-        {
-            tryAgain2:
-            _flashes[i][0] = Rnd.Range(0, 6);
-            if (_semaphores[curLetter].Contains(i))
-                _flashes[i][1] = _flashes[i][0];
-            else
-            {
-                tryAgain3:
-                _flashes[i][1] = Rnd.Range(0, 6);
-                if (_flashes[i][1] == _flashes[i][0])
-                    goto tryAgain3;
-            }
-            if ((_flashes[i][0] == _flashes[(i + 7) % 8][0] && _flashes[i][1] == _flashes[(i + 7) % 8][1]) || (_flashes[i][0] == _flashes[(i + 1) % 8][0] && _flashes[i][1] == _flashes[(i + 1) % 8][1]))
-                goto tryAgain2;
-        }
-        ScreenText.text = _colourNames[_flashes[_curFlash][0]];
-        ScreenText.color = _colours[_flashes[_curFlash][1]];
-    }
-
-    private void GenerateWordSearch()
-    {
-        tryAgain:
-        _field = new char[_w * _h];
-
-        var coords = Enumerable.Range(0, _w * _h).ToList();
-        var directions = new[] { WordDirection.Down, WordDirection.DownRight, WordDirection.Right, WordDirection.UpRight, WordDirection.Up, WordDirection.UpLeft, WordDirection.Left, WordDirection.DownLeft };
-
-        coords.Shuffle();
-        foreach (var coord in coords)
-            foreach (var dir in directions.Shuffle())
-                if (TryPlaceWord(_solution, coord % _w, coord / _w, dir))
-                {
-                    _solutionStart = coord;
-                    var dx = new[] { 0, 1, 1, 1, 0, 3, 3, 3 };
-                    var dy = new[] { 1, 1, 0, 3, 3, 3, 0, 1 };
-                    _solutionEnd = 4 * ((coord / 4 + dy[(int)dir] * (_solution.Length - 1)) % 4) + (coord % 4 + dx[(int)dir] * (_solution.Length - 1)) % 4;
-                    goto initialPlaced;
-                }
-
-
-        initialPlaced:;
-        for (int i = 0; i < _w * _h; i++)
-            if (_field[i] == '\0')
-                _field[i] = (char)('A' + Rnd.Range(0, 26));
-
-        // Make sure that the field doesn’t by chance contain one of the wrong words
-
-        var temp = new string[] { _solution };
-        var wrongWords = _chartWords.Except(temp);
-        foreach (var wrong in wrongWords)
-            foreach (var coord in coords)
-                foreach (var dir in directions)
-                    if (TryPlaceWord(wrong, coord % _w, coord / _w, dir))
-                    {
-                        Debug.LogFormat("<Recolour Flash #{4}> Wrong word {0} happens to come up in grid at {1},{2},{3}. Restarting.", wrong, coord % _w, coord / _w, dir, _moduleId);
-                        goto tryAgain;
-                    }
-
-        Debug.LogFormat("[Recolour Flash #{0}] Field:", _moduleId);
-        for (int r = 0; r < 4; r++)
-            Debug.LogFormat("[Recolour Flash #{0}] {1} {2} {3} {4} ", _moduleId, _field[r * 4 + 0], _field[r * 4 + 1], _field[r * 4 + 2], _field[r * 4 + 3]);
-    }
-
-    private bool TryPlaceWord(string word, int x, int y, WordDirection dir)
-    {
-        switch (dir)
-        {
-            case WordDirection.Down:
-                for (int j = 0; j < word.Length; j++)
-                    if (_field[x + _w * ((y + j) % 4)] != '\0' && _field[x + _w * ((y + j) % 4)] != word[j])
-                        return false;
-                for (int j = 0; j < word.Length; j++)
-                    _field[x + _w * ((y + j) % 4)] = word[j];
-                return true;
-            case WordDirection.DownRight:
-                for (int j = 0; j < word.Length; j++)
-                    if (_field[((x + j) % 4) + _w * ((y + j) % 4)] != '\0' && _field[((x + j) % 4) + _w * ((y + j) % 4)] != word[j])
-                        return false;
-                for (int j = 0; j < word.Length; j++)
-                    _field[((x + j) % 4) + _w * ((y + j) % 4)] = word[j];
-                return true;
-            case WordDirection.Right:
-                for (int j = 0; j < word.Length; j++)
-                    if (_field[((x + j) % 4) + _w * y] != '\0' && _field[((x + j) % 4) + _w * y] != word[j])
-                        return false;
-                for (int j = 0; j < word.Length; j++)
-                    _field[((x + j) % 4) + _w * y] = word[j];
-                return true;
-            case WordDirection.UpRight:
-                for (int j = 0; j < word.Length; j++)
-                    if (_field[((x + j) % 4) + _w * ((y - j + 4) % 4)] != '\0' && _field[((x + j) % 4) + _w * ((y - j + 4) % 4)] != word[j])
-                        return false;
-                for (int j = 0; j < word.Length; j++)
-                    _field[((x + j) % 4) + _w * ((y - j + 4) % 4)] = word[j];
-                return true;
-            case WordDirection.Up:
-                for (int j = 0; j < word.Length; j++)
-                    if (_field[x + _w * ((y - j + 4) % 4)] != '\0' && _field[x + _w * ((y - j + 4) % 4)] != word[j])
-                        return false;
-                for (int j = 0; j < word.Length; j++)
-                    _field[x + _w * ((y - j + 4) % 4)] = word[j];
-                return true;
-            case WordDirection.UpLeft:
-                for (int j = 0; j < word.Length; j++)
-                    if (_field[((x - j + 4) % 4) + _w * ((y - j + 4) % 4)] != '\0' && _field[((x - j + 4) % 4) + _w * ((y - j + 4) % 4)] != word[j])
-                        return false;
-                for (int j = 0; j < word.Length; j++)
-                    _field[((x - j + 4) % 4) + _w * ((y - j + 4) % 4)] = word[j];
-                return true;
-            case WordDirection.Left:
-                for (int j = 0; j < word.Length; j++)
-                    if (_field[((x - j + 4) % 4) + _w * y] != '\0' && _field[((x - j + 4) % 4) + _w * y] != word[j])
-                        return false;
-                for (int j = 0; j < word.Length; j++)
-                    _field[((x - j + 4) % 4) + _w * y] = word[j];
-                return true;
-            case WordDirection.DownLeft:
-                for (int j = 0; j < word.Length; j++)
-                    if (_field[((x - j + 4) % 4) + _w * ((y + j) % 4)] != '\0' && _field[((x - j + 4) % 4) + _w * ((y + j) % 4)] != word[j])
-                        return false;
-                for (int j = 0; j < word.Length; j++)
-                    _field[((x - j + 4) % 4) + _w * ((y + j) % 4)] = word[j];
-                return true;
-        }
-        return false;
-    }
-
 #pragma warning disable 0414
-    private readonly string TwitchHelpMessage = "!{0} press yes/no even/odd/twice. [Press the YES or NO button on an even digit, odd digit, or twice.]";
+    private readonly string TwitchHelpMessage = "!{0} press yes [Press the 'YES' button.] | !{0} press no [Press the 'NO' button.] | 'press' is optional. | Button presses can be chained.";
 #pragma warning restore 0414
-    private IEnumerator Press(KMSelectable btn, float delay = 0.1f)
-    {
-        btn.OnInteract();
-        yield return new WaitForSeconds(delay);
-        if (btn.OnInteractEnded != null)
-            btn.OnInteractEnded();
-    }
-    private IEnumerator PressOnParity(int parity, KMSelectable btn, float delay = 0.1f)
-    {
-        yield return new WaitUntil(() => (int)BombInfo.GetTime() % 2 == parity % 2);
-        int curParity = (int)BombInfo.GetTime() % 2;
-        yield return Press(btn, delay);
-        yield return new WaitUntil(() => (int)BombInfo.GetTime() % 2 != curParity);
-    }
-    private IEnumerator DoubleTap(KMSelectable btn, float delay = 0.1f)
-    {
-        int cd = (int)BombInfo.GetTime();
-        while ((int)BombInfo.GetTime() == cd)
-            yield return null;
-        yield return Press(btn, delay);
-        yield return new WaitForSeconds(delay);
-        yield return Press(btn, delay);
-    }
+
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        var m = Regex.Match(command, @"^\s*(press\s+)?((?<yes>yes)|no)\s+((?<even>even)|(?<odd>odd)|twice)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-        if (!m.Success)
-            yield break;
+        command = Regex.Replace(command.Trim().ToLowerInvariant(), @"\s+", " ");
+        if (command.StartsWith("press "))
+            command = command.Substring(6);
+        var arr = command.Split(' ');
+        var btns = new List<KMSelectable>();
+        for (int i = 0; i < arr.Length; i++)
+        {
+            Debug.Log("<" + arr[i] + ">");
+            if (arr[i] == "yes")
+                btns.Add(YesButton);
+            else if (arr[i] == "no")
+                btns.Add(NoButton);
+            else
+                yield break;
+        }
         yield return null;
-        yield return "solve";
-        yield return "strike";
-        var btn = m.Groups["yes"].Success ? YesButton : NoButton;
-        if (m.Groups["even"].Success)
-            yield return PressOnParity(0, btn);
-        else if (m.Groups["odd"].Success)
-            yield return PressOnParity(1, btn);
-        else
-            yield return DoubleTap(btn);
+        yield return btns;
     }
     private IEnumerator TwitchHandleForcedSolve()
     {
-        if (_selectedStart != _solutionStart)
+        while (!_moduleSolved)
         {
-            if (_selectedStart != null)
-                yield return NavigateToAndSubmit(_selectedStart.Value);
-            yield return NavigateToAndSubmit(_solutionStart);
+            if (_overallStage == 0)
+            {
+                if (!_solutions[_stageOneIndex])
+                {
+                    NoButton.OnInteract();
+                    yield return new WaitForSeconds(0.1f);
+                    NoButton.OnInteractEnded();
+                    yield return new WaitForSeconds(0.1f);
+                }
+                else
+                {
+                    YesButton.OnInteract();
+                    yield return new WaitForSeconds(0.1f);
+                    YesButton.OnInteractEnded();
+                    yield return new WaitForSeconds(0.1f);
+                }
+            }
+            else if (_overallStage == 1)
+            {
+                if (!_recolouredCells.Any(i => i.Equals(_stageTwoDisplays[_stageTwoIndex])))
+                {
+                    NoButton.OnInteract();
+                    yield return new WaitForSeconds(0.1f);
+                    NoButton.OnInteractEnded();
+                    yield return new WaitForSeconds(0.1f);
+                }
+                else
+                {
+                    YesButton.OnInteract();
+                    yield return new WaitForSeconds(0.1f);
+                    YesButton.OnInteractEnded();
+                    yield return new WaitForSeconds(0.1f);
+                }
+            }
         }
-        yield return NavigateToAndSubmit(_solutionEnd);
-
-    }
-    private IEnumerator NavigateToAndSubmit(int goal)
-    {
-        int goalRow = goal / 4;
-        int goalCol = goal % 4;
-        int rowParity = ((_curRow + 3) % 4) == goalRow ? 1 : 0;
-        int colParity = ((_curCol + 3) % 4) == goalCol ? 1 : 0;
-        while (_curRow != goalRow)
-            yield return PressOnParity(rowParity, NoButton);
-        while (_curCol != goalCol)
-            yield return PressOnParity(colParity, YesButton);
-        yield return DoubleTap(NoButton);
-        while (!_moduleSolved && _selectedEnd != null)
-            yield return true;
+        yield break;
     }
 }
