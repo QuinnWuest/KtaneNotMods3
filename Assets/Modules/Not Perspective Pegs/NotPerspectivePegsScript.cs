@@ -103,12 +103,12 @@ public class NotPerspectivePegsScript : MonoBehaviour
         while (elapsed < duration)
         {
             for (int i = 0; i < 5; i++)
-                PegObjs[i].transform.localPosition = new Vector3(PegObjs[i].transform.localPosition.x, PegObjs[i].transform.localPosition.y, Mathf.Lerp(-1.5f, 0f, elapsed / duration));
+                PegObjs[i].transform.localPosition = new Vector3(PegObjs[i].transform.localPosition.x, PegObjs[i].transform.localPosition.y, Mathf.Lerp(-1.5f, 0.25f, elapsed / duration));
             yield return null;
             elapsed += Time.deltaTime;
         }
         for (int i = 0; i < 5; i++)
-            PegObjs[i].transform.localPosition = new Vector3(PegObjs[i].transform.localPosition.x, PegObjs[i].transform.localPosition.y, 0f);
+            PegObjs[i].transform.localPosition = new Vector3(PegObjs[i].transform.localPosition.x, PegObjs[i].transform.localPosition.y, 0.25f);
         _canInteract = true;
     }
 
@@ -210,7 +210,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
         var elapsed = 0f;
         while (elapsed < duration)
         {
-            PegObjs[0].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0f, -1.5f, elapsed / duration));
+            PegObjs[0].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0.25f, -1.5f, elapsed / duration));
             yield return null;
             elapsed += Time.deltaTime;
         }
@@ -220,66 +220,66 @@ public class NotPerspectivePegsScript : MonoBehaviour
         elapsed = 0f;
         while (elapsed < duration)
         {
-            PegObjs[0].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0f, elapsed / duration));
-            PegObjs[1].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0f, -1.5f, elapsed / duration));
+            PegObjs[0].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0.25f, elapsed / duration));
+            PegObjs[1].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0.25f, -1.5f, elapsed / duration));
             yield return null;
             elapsed += Time.deltaTime;
         }
-        PegObjs[0].transform.localPosition = new Vector3(0f, 0f, 0f);
+        PegObjs[0].transform.localPosition = new Vector3(0f, 0f, 0.25f);
         PegObjs[1].transform.localPosition = new Vector3(0f, 0f, -1.5f);
         yield return new WaitForSeconds(0.35f);
 
         elapsed = 0f;
         while (elapsed < duration)
         {
-            PegObjs[1].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0f, elapsed / duration));
-            PegObjs[2].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0f, -1.5f, elapsed / duration));
+            PegObjs[1].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0.25f, elapsed / duration));
+            PegObjs[2].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0.25f, -1.5f, elapsed / duration));
             yield return null;
             elapsed += Time.deltaTime;
         }
-        PegObjs[1].transform.localPosition = new Vector3(0f, 0f, 0f);
+        PegObjs[1].transform.localPosition = new Vector3(0f, 0f, 0.25f);
         PegObjs[2].transform.localPosition = new Vector3(0f, 0f, -1.5f);
         yield return new WaitForSeconds(0.1f);
 
         elapsed = 0f;
         while (elapsed < duration)
         {
-            PegObjs[2].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0f, elapsed / duration));
-            PegObjs[3].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0f, -1.5f, elapsed / duration));
+            PegObjs[2].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0.25f, elapsed / duration));
+            PegObjs[3].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0.25f, -1.5f, elapsed / duration));
             yield return null;
             elapsed += Time.deltaTime;
         }
-        PegObjs[2].transform.localPosition = new Vector3(0f, 0f, 0f);
+        PegObjs[2].transform.localPosition = new Vector3(0f, 0f, 0.25f);
         PegObjs[3].transform.localPosition = new Vector3(0f, 0f, -1.5f);
         yield return new WaitForSeconds(0.25f);
 
         elapsed = 0f;
         while (elapsed < duration)
         {
-            PegObjs[3].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0f, elapsed / duration));
-            PegObjs[4].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0f, -1.5f, elapsed / duration));
+            PegObjs[3].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0.25f, elapsed / duration));
+            PegObjs[4].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0.25f, -1.5f, elapsed / duration));
             yield return null;
             elapsed += Time.deltaTime;
         }
-        PegObjs[3].transform.localPosition = new Vector3(0f, 0f, 0f);
+        PegObjs[3].transform.localPosition = new Vector3(0f, 0f, 0.25f);
         PegObjs[4].transform.localPosition = new Vector3(0f, 0f, -1.5f);
         yield return new WaitForSeconds(0.25f);
 
         elapsed = 0f;
         while (elapsed < duration)
         {
-            PegObjs[4].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0f, elapsed / duration));
+            PegObjs[4].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(-1.5f, 0.25f, elapsed / duration));
             yield return null;
             elapsed += Time.deltaTime;
         }
-        PegObjs[4].transform.localPosition = new Vector3(0f, 0f, 0f);
+        PegObjs[4].transform.localPosition = new Vector3(0f, 0f, 0.25f);
         yield return new WaitForSeconds(0.65f);
 
         elapsed = 0f;
         while (elapsed < duration)
         {
             for (int peg = 0; peg < 5; peg++)
-                PegObjs[peg].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0f, -1.5f, elapsed / duration));
+                PegObjs[peg].transform.localPosition = new Vector3(0f, 0f, Mathf.Lerp(0.25f, -1.5f, elapsed / duration));
             yield return null;
             elapsed += Time.deltaTime;
         }

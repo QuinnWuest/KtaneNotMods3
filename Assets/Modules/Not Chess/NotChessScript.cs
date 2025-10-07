@@ -134,6 +134,7 @@ public class NotChessScript : MonoBehaviour
                 if (_inputtedLetter != null)
                 {
                     Debug.LogFormat("[Not Chess #{0}] Pressed {1}, even though a letter has already been pressed. Strike.", _moduleId, "ABCDEF"[btn]);
+                    _inputtedLetter = null;
                     Module.HandleStrike();
                     return false;
                 }
@@ -163,6 +164,7 @@ public class NotChessScript : MonoBehaviour
                 if (_inputtedNumber != null)
                 {
                     Debug.LogFormat("[Not Chess #{0}] Pressed {1}, even though a letter has already been pressed. Strike.", _moduleId, "ABCDEF"[btn]);
+                    _inputtedLetter = null;
                     _movesForInputtedPiece.Clear();
                     _inputtedCoordinates.Clear();
                     Module.HandleStrike();
@@ -429,10 +431,10 @@ public class NotChessScript : MonoBehaviour
                     {
                         Debug.LogFormat("[Not Chess #{0}] White has no more moves!", _moduleId);
                         _finalAnswer = CalculateFinalInput(_checkerBoard, _blacksLastMoves.Last()).ToArray();
-                        return false;
                     }
+                    else
+                        LogAllPossibleMovesForWhite(_checkerBoard);
                     _expectingInput = false;
-                    LogAllPossibleMovesForWhite(_checkerBoard);
                     StartCoroutine(ResetCountdown());
                 }
             }
@@ -614,8 +616,8 @@ public class NotChessScript : MonoBehaviour
                     var blackCounts = new Dictionary<int, List<int>>();
                     for (int file = 0; file < 6; file++)
                     {
-                        var numPieces = board.Pieces.Count(p => p != null && p.Coordinate.X == file);
-                        if (blackCounts.ContainsKey(numPieces))
+                        var numPieces = board.Pieces.Count(p => p != null && p.Color == CheckerColor.Black && p.Coordinate.X == file);
+                        if (!blackCounts.ContainsKey(numPieces))
                             blackCounts[numPieces] = new List<int>();
                         blackCounts[numPieces].Add(file);
                     }
@@ -640,7 +642,6 @@ public class NotChessScript : MonoBehaviour
         }
 
         Debug.LogFormat("[Not Chess #{0}] Coordinates to input: {1}.", _moduleId, coords.Join("; "));
-
         return coords;
     }
 
@@ -677,7 +678,7 @@ public class NotChessScript : MonoBehaviour
 
     private void Update()
     {
-        if (_moduleSolved || _expectingFinalInput || _setReadyFlag || _lockModule)
+        if (_moduleSolved || _expectingFinalInput || _setReadyFlag || _lockModule || !_activated)
             return;
 
         decimal allSolvedModules = BombInfo.GetSolvedModuleNames().Count(x => !_ignoredModules.Contains(x));
@@ -685,19 +686,20 @@ public class NotChessScript : MonoBehaviour
         {
             Debug.LogFormat("[Not Chess #{0}] The bomb has too few solves to continue the game. The next move will end the game, and final input will be required.", _moduleId);
             _setReadyFlag = true;
+            return;
         }
-
         decimal modulePercentage = (allSolvedModules / _moduleCount) * 100;
         if (modulePercentage >= 40)
         {
             Debug.LogFormat("[Not Chess #{0}] 40% of the bomb’s modules have been solved. The next move will end the game, and final input will be required.", _moduleId);
             _setReadyFlag = true;
+            return;
         }
-
         if (BombInfo.GetTime() < 180)
         {
             Debug.LogFormat("[Not Chess #{0}] The bomb's timer has reached below three minutes. The next move will end the game, and final input will be required.", _moduleId);
             _setReadyFlag = true;
+            return;
         }
     }
 
@@ -705,7 +707,7 @@ public class NotChessScript : MonoBehaviour
     {
         for (int time = _timerStart; time >= 0; time--)
         {
-            DisplayText.text = string.Format("{0}-{1}", "0abcdefghij"[time / 10], time % 10);
+            DisplayText.text = string.Format("{0}-{1}", "abcdefghijk"[time / 10], time % 10);
             if (!_expectingFinalInput)
             {
                 var cols = _blacksLastMoves.Select(i => (int?)i.X).ToList();
@@ -760,7 +762,7 @@ public class NotChessScript : MonoBehaviour
         DisplayText.text = "-";
         for (int i = 0; i < 24; i++)
         {
-            string randStr = "abcdefghij0123456789-";
+            string randStr = "abcdefghijk0123456789-";
             string strA = randStr[Rnd.Range(0, randStr.Length)].ToString();
             string strB = randStr[Rnd.Range(0, randStr.Length)].ToString();
             string strC = randStr[Rnd.Range(0, randStr.Length)].ToString();
@@ -786,7 +788,7 @@ public class NotChessScript : MonoBehaviour
         Audio.PlaySoundAtTransform("CHsystemfailure", transform);
         for (int i = 0; i < 168; i++)
         {
-            string randStr = "abcdefghij0123456789-";
+            string randStr = "abcdefghijk0123456789-";
             string strA = randStr[Rnd.Range(0, randStr.Length)].ToString();
             string strB = randStr[Rnd.Range(0, randStr.Length)].ToString();
             string strC = randStr[Rnd.Range(0, randStr.Length)].ToString();
@@ -812,7 +814,7 @@ public class NotChessScript : MonoBehaviour
         int interval = 54;
         for (int i = 0; i < 216; i++)
         {
-            string randStr = "abcdefghij0123456789-";
+            string randStr = "abcdefghijk0123456789-";
             if (i % interval == 0)
                 Audio.PlaySoundAtTransform("CHtick", transform);
             string strA = i < interval * 1 ? randStr[Rnd.Range(0, randStr.Length)].ToString() : "g";

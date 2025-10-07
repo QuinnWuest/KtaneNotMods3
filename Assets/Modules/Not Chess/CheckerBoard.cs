@@ -265,8 +265,29 @@ public class CheckerBoard
         {
             for (int i = 1; i < coordinates.Count; i++)
             {
-                var move = new CheckerMove(coordinates[i - 1], coordinates[i], null);
-                newBoard = newBoard.ApplyMove(move);
+                var from = coordinates[i - 1];
+                var to = coordinates[i];
+
+                int dx = to.X - from.X;
+                int dy = to.Y - from.Y;
+
+                if (Math.Abs(dx) != Math.Abs(dy) || (Math.Abs(dx) != 1 && Math.Abs(dx) != 2))
+                    throw new InvalidOperationException("Invalid step in coordinate sequence (not a diagonal step of length 1 or 2).");
+
+                List<CheckerCoordinate> captured = new List<CheckerCoordinate>();
+
+                if (Math.Abs(dx) == 2)
+                {
+                    var mid = new CheckerCoordinate(from.X + dx / 2, from.Y + dy / 2);
+
+                    var midPiece = newBoard.GetPieceAt(mid);
+                    if (midPiece != null)
+                        captured.Add(mid);
+                    else
+                        throw new InvalidOperationException(string.Format("Expected captured piece at {0},{1} but none found.", mid.X, mid.Y));
+                }
+                var stepMove = new CheckerMove(from, to, captured);
+                newBoard = newBoard.ApplyMove(stepMove);
             }
         }
         else
