@@ -20180,8 +20180,16 @@ MonoBehaviour:
   - {fileID: 8300000, guid: a659185e5b54c804b8df2b41b1eb45ae, type: 3}
   - {fileID: 8300000, guid: 8fe814bd8823be944bc6ee2628bda049, type: 3}
   - {fileID: 8300000, guid: c7caef196a4bbd14a9cb5280acc5414b, type: 3}
+  - {fileID: 8300000, guid: cd26513d7febea84c9a31486ade0d237, type: 3}
+  - {fileID: 8300000, guid: 90c347ce0f82a4944a8fbbd4ec78b5ad, type: 3}
+  - {fileID: 8300000, guid: 2afd7ff64aaf6a74294f07e5ba6fa6f1, type: 3}
+  - {fileID: 8300000, guid: 0e1de8ebde51aa34381a688b050553ca, type: 3}
+  - {fileID: 8300000, guid: 540c66ea3a283f04c9dd67c22749bffe, type: 3}
+  - {fileID: 8300000, guid: 2b54f6f453d0aaa49aecc4eebf2c4e5a, type: 3}
+  - {fileID: 8300000, guid: 07790e510e8de0d47823c2ffbb59590e, type: 3}
+  - {fileID: 8300000, guid: 1366f4b334f3ee649a194c6d9819fdb8, type: 3}
   StrikeCount: 100
-  TimeLimit: 6000
+  TimeLimit: 184
   BombSize: 1
   FrontFaceOnly: 1
   EdgeworkConfiguration: {fileID: 0}

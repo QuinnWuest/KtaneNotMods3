@@ -1,4 +1,4 @@
-﻿public class CheckerCoordinate
+﻿public struct CheckerCoordinate
 {
     public int X;
     public int Y;
@@ -11,7 +11,7 @@
 
     public bool Equals(CheckerCoordinate other)
     {
-        return other != null && other.X == X && other.Y == Y;
+        return other.X == X && other.Y == Y;
     }
 
     public override bool Equals(object obj)
@@ -25,5 +25,10 @@
         hashCode = hashCode * -1521134295 + X.GetHashCode();
         hashCode = hashCode * -1521134295 + Y.GetHashCode();
         return hashCode;
+    }
+
+    public override string ToString()
+    {
+        return string.Format("{0}{1}", "ABCDEF"[X], Y + 1);
     }
 }
