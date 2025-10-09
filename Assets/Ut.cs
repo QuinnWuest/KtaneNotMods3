@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RecolourFlash
+namespace NotModdedModulesVol3
 {
     static class Ut
     {
@@ -144,7 +144,7 @@ namespace RecolourFlash
 
             public override bool Equals(object obj)
             {
-                return obj is Range && Equals((Range) obj);
+                return obj is Range && Equals((Range)obj);
             }
 
             public override int GetHashCode()
@@ -179,6 +179,8 @@ namespace RecolourFlash
                 IncludedRange = splitRange;
             }
         }
+
+        public static T[] NewArray<T>(params T[] array) { return array; }
 
         /// <summary>
         ///     Returns the first element from the input sequence for which the value selector returns the smallest value.</summary>
@@ -232,7 +234,7 @@ namespace RecolourFlash
         public static int? MinIndexOrNull<T, TValue>(this IEnumerable<T> source, Func<T, TValue> valueSelector) where TValue : IComparable<TValue>
         {
             var ret = minMaxElement(source, valueSelector, min: true, doThrow: false);
-            return ret == null ? (int?) null : ret.Value.minMaxIndex;
+            return ret == null ? (int?)null : ret.Value.minMaxIndex;
         }
 
         /// <summary>
@@ -251,7 +253,7 @@ namespace RecolourFlash
         public static int? MaxIndexOrNull<T, TValue>(this IEnumerable<T> source, Func<T, TValue> valueSelector) where TValue : IComparable<TValue>
         {
             var ret = minMaxElement(source, valueSelector, min: false, doThrow: false);
-            return ret == null ? (int?) null : ret.Value.minMaxIndex;
+            return ret == null ? (int?)null : ret.Value.minMaxIndex;
         }
 
         struct MinMaxResult<T>

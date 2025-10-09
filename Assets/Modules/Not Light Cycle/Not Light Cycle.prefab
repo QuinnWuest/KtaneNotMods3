@@ -473,6 +473,7 @@ GameObject:
   - component: {fileID: 114267279873187044}
   - component: {fileID: 114805230328820894}
   - component: {fileID: 114580129621159004}
+  - component: {fileID: 114683660801414976}
   m_Layer: 0
   m_Name: Not Light Cycle
   m_TagString: Untagged
@@ -3160,7 +3161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1cfb889a07d5fd4e9baed7960bb397f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _colorblindMode: 0
+  _colorblindMode: 1
 --- !u!114 &114612088762785066
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3226,6 +3227,49 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - Legacy Shaders/Transparent/Diffuse
+--- !u!114 &114683660801414976
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1430206071402836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7839124a5b64000488f6be77e5cdd6c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Module: {fileID: 114927990008930198}
+  BombInfo: {fileID: 114267279873187044}
+  Audio: {fileID: 114805230328820894}
+  ColorblindMode: {fileID: 114580129621159004}
+  LightObjs:
+  - {fileID: 1186122625221334}
+  - {fileID: 1136064313805208}
+  - {fileID: 1151057853914894}
+  - {fileID: 1618491492070944}
+  - {fileID: 1923775080522380}
+  - {fileID: 1411022857129284}
+  LightOffMats:
+  - {fileID: 2100000, guid: b9f214a16cc9c854ca50586553e17408, type: 2}
+  - {fileID: 2100000, guid: fa5e4448932ae5f49972c98e9205ab6f, type: 2}
+  - {fileID: 2100000, guid: d4d24595b02d76f4ebb2d0baadee128b, type: 2}
+  - {fileID: 2100000, guid: 00bbb9f17b7020647ae542195482870f, type: 2}
+  - {fileID: 2100000, guid: 9de561cb2ee7b244aa8c64909791b405, type: 2}
+  - {fileID: 2100000, guid: e28258ee9ffdb7747b96d5f231f5aa1e, type: 2}
+  LightOnMats:
+  - {fileID: 2100000, guid: 48bc97f22947d67439fcfb4662cec82a, type: 2}
+  - {fileID: 2100000, guid: 3b2445935abdd454f904b8961f46c1bc, type: 2}
+  - {fileID: 2100000, guid: 97e90968313fe07408c02121faca451c, type: 2}
+  - {fileID: 2100000, guid: 9b3a1edd60ac2034faf49e29c61a0868, type: 2}
+  - {fileID: 2100000, guid: eb1e3f4234cb752449cc06d4673f87fd, type: 2}
+  - {fileID: 2100000, guid: 5b464fea34c85a74e9cad7d8bc73260b, type: 2}
+  ColorblindTexts:
+  - {fileID: 102098785836742814}
+  - {fileID: 102107401090251444}
+  - {fileID: 102474919812754528}
+  - {fileID: 102117789097530638}
+  - {fileID: 102690349108409250}
+  - {fileID: 102155701013405586}
 --- !u!114 &114775749989377302
 MonoBehaviour:
   m_ObjectHideFlags: 1
