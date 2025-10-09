@@ -27,28 +27,25 @@ public class NotChessScript : MonoBehaviour
     private decimal _moduleCount;
     private string[] _ignoredModules;
 
-    private const int _timerStart = 108;
+    private const int _timerStart = 42;
     private Coroutine _countdownTimer;
 
-    private static T[] NewArray<T>(params T[] array) { return array; }
-
-    private static readonly CheckerBoard _initialCheckerBoard = new CheckerBoard(NewArray
-    (
-        new CheckerPiece(CheckerColor.White, new CheckerCoordinate(0, 0)), null,
-        new CheckerPiece(CheckerColor.White, new CheckerCoordinate(2, 0)), null,
-        new CheckerPiece(CheckerColor.White, new CheckerCoordinate(4, 0)), null,
-        null, new CheckerPiece(CheckerColor.White, new CheckerCoordinate(1, 1)),
-        null, new CheckerPiece(CheckerColor.White, new CheckerCoordinate(3, 1)),
-        null, new CheckerPiece(CheckerColor.White, new CheckerCoordinate(5, 1)),
-        null, null, null, null, null, null,
-        null, null, null, null, null, null,
-        new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(0, 4)), null,
-        new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(2, 4)), null,
-        new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(4, 4)), null,
-        null, new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(1, 5)),
-        null, new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(3, 5)),
-        null, new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(5, 5))
-    ), 6);
+    private static readonly CheckerBoard _initialCheckerBoard = new CheckerBoard(
+        new List<CheckerPiece>() {
+            new CheckerPiece(CheckerColor.White, new CheckerCoordinate(0, 0)),
+            new CheckerPiece(CheckerColor.White, new CheckerCoordinate(2, 0)),
+            new CheckerPiece(CheckerColor.White, new CheckerCoordinate(4, 0)),
+            new CheckerPiece(CheckerColor.White, new CheckerCoordinate(1, 1)),
+            new CheckerPiece(CheckerColor.White, new CheckerCoordinate(3, 1)),
+            new CheckerPiece(CheckerColor.White, new CheckerCoordinate(5, 1)),
+            new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(0, 4)),
+            new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(2, 4)),
+            new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(4, 4)),
+            new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(1, 5)),
+            new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(3, 5)),
+            new CheckerPiece(CheckerColor.Black, new CheckerCoordinate(5, 5))
+        }
+    , 6);
     private CheckerBoard _checkerBoard;
 
     private bool _expectingInput;
@@ -843,7 +840,12 @@ public class NotChessScript : MonoBehaviour
         yield break;
     }
 
-    private IEnumerator TwitchHandleForcedSolve()
+    private void TwitchHandleForcedSolve()
+    {
+        StartCoroutine(Autosolve());
+    }
+
+    private IEnumerator Autosolve()
     {
         yield break;
     }

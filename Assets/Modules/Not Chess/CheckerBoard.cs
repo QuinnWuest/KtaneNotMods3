@@ -6,7 +6,7 @@ using System.Text;
 
 public class CheckerBoard
 {
-    public CheckerPiece[] Pieces;
+    public List<CheckerPiece> Pieces;
     public int Width;
 
     private static readonly CheckerCoordinate[] WhiteDirections = new CheckerCoordinate[]
@@ -20,7 +20,7 @@ public class CheckerBoard
         new CheckerCoordinate(1, -1)
     };
 
-    public CheckerBoard(CheckerPiece[] pieces, int width)
+    public CheckerBoard(List<CheckerPiece> pieces, int width)
     {
         Pieces = pieces;
         Width = width;
@@ -38,26 +38,20 @@ public class CheckerBoard
 
     public CheckerBoard ApplyMove(CheckerMove move)
     {
-        var newPieces = new CheckerPiece[Pieces.Length];
-        for (int i = 0; i < Pieces.Length; i++)
-        {
-            var p = Pieces[i];
-            newPieces[i] = p == null ? null : new CheckerPiece(p.Color, new CheckerCoordinate(p.Coordinate.X, p.Coordinate.Y), p.IsKing);
-        }
 
-        int movingIndex = Array.FindIndex(newPieces, p => p != null && p.Coordinate.Equals(move.From));
-        if (movingIndex == -1)
+        var newPieces = new List<CheckerPiece>(
+            Pieces.Select(p => p == null ? null : new CheckerPiece(p.Color, new CheckerCoordinate(p.Coordinate.X, p.Coordinate.Y), p.IsKing)
+            ));
+
+        var movingPiece = newPieces.FirstOrDefault(p => p != null && p.Coordinate.Equals(move.From));
+        if (movingPiece == null)
             throw new InvalidOperationException("No piece found at " + move.From.X + "," + move.From.Y);
-
-        var movingPiece = newPieces[movingIndex];
 
         if (move.CapturedPieces != null)
         {
-            for (int i = 0; i < newPieces.Length; i++)
-            {
-                if (newPieces[i] != null && move.CapturedPieces.Any(c => c.Equals(newPieces[i].Coordinate)))
-                    newPieces[i] = null;
-            }
+            newPieces = newPieces
+                .Where(p => p == null || !move.CapturedPieces.Any(c => c.Equals(p.Coordinate)))
+                .ToList();
         }
 
         bool isKing = movingPiece.IsKing;
@@ -71,7 +65,8 @@ public class CheckerBoard
                 isKing = true;
         }
 
-        newPieces[movingIndex] = new CheckerPiece(movingPiece.Color, newCoord, isKing);
+        newPieces.Remove(movingPiece);
+        newPieces.Add(new CheckerPiece(movingPiece.Color, newCoord, isKing));
 
         return new CheckerBoard(newPieces, Width);
     }
@@ -81,9 +76,8 @@ public class CheckerBoard
         var allSequences = new List<List<CheckerMove>>();
         bool anyJumpsExist = false;
 
-        for (int i = 0; i < Pieces.Length; i++)
+        foreach(var piece in Pieces)
         {
-            var piece = Pieces[i];
             if (piece == null || piece.Color != color)
                 continue;
 
@@ -98,9 +92,8 @@ public class CheckerBoard
         if (anyJumpsExist)
             return allSequences;
 
-        for (int i = 0; i < Pieces.Length; i++)
+        foreach (var piece in Pieces)
         {
-            var piece = Pieces[i];
             if (piece == null || piece.Color != color)
                 continue;
 
@@ -117,20 +110,11 @@ public class CheckerBoard
                 if (newX < 0 || newX >= Width || newY < 0 || newY >= Width)
                     continue;
 
-                bool occupied = false;
-                for (int j = 0; j < Pieces.Length; j++)
-                {
-                    var other = Pieces[j];
-                    if (other != null && other.Coordinate.X == newX && other.Coordinate.Y == newY)
-                    {
-                        occupied = true;
-                        break;
-                    }
-                }
+                var targetCoord = new CheckerCoordinate(newX, newY);
 
-                if (!occupied)
+                if (GetPieceAt(targetCoord) == null)
                 {
-                    var move = new CheckerMove(piece.Coordinate, new CheckerCoordinate(newX, newY), new List<CheckerCoordinate>());
+                    var move = new CheckerMove(piece.Coordinate, targetCoord, new List<CheckerCoordinate>());
                     allSequences.Add(new List<CheckerMove> { move });
                 }
             }
@@ -321,7 +305,7 @@ public class CheckerBoard
             sb.Append(string.Format("{0}{0}{0}|{1}{1}{1}|{0}{0}{0}|{1}{1}{1}|{0}{0}{0}|{1}{1}{1}\n", Y % 2 == 0 ? "▓" : "░", Y % 2 == 0 ? "░" : "▓"));
             for (int X = 0; X <= (Width - 1); X++)
             {
-                var p = Pieces.FirstOrDefault(piece => piece != null && piece.Coordinate.X == X && piece.Coordinate.Y == Y);
+                var p = GetPieceAt(new CheckerCoordinate(X, Y));
                 string shade = Y % 2 != X % 2 ? "░" : "▓";
                 string str = p == null ? shade : p.Color == CheckerColor.White ? (p.IsKing ? "W" : "w") : (p.IsKing ? "B" : "b");
                 sb.Append(shade + str + shade);
