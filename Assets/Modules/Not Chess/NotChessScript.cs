@@ -58,7 +58,7 @@ public class NotChessScript : MonoBehaviour
 
     private readonly List<CheckerCoordinate> _inputtedCoordinates = new List<CheckerCoordinate>();
     private List<CheckerCoordinate> _blacksLastMoves = new List<CheckerCoordinate>();
-    private List<List<CheckerMove>> _movesForInputtedPiece = new List<List<CheckerMove>>();
+    private List<List<CheckerCoordinate>> _movesForInputtedPiece = new List<List<CheckerCoordinate>>();
     private readonly List<CheckerCoordinate> _finalInput = new List<CheckerCoordinate>();
     private CheckerCoordinate[] _finalAnswer = new CheckerCoordinate[2];
 
@@ -146,8 +146,7 @@ public class NotChessScript : MonoBehaviour
                 var piecesWithinThisColumn = _checkerBoard.Pieces.Where(piece => piece != null && piece.Coordinate.X == btn && piece.Color == CheckerColor.White)
                     .Select(piece => piece.Coordinate).ToArray();
 
-                if (!piecesWithinThisColumn.Any(piece => _checkerBoard.GetAllValidMoveSequences(CheckerColor.White).Any(seq => seq[0].From.Equals(piece))
-                ))
+                if (!piecesWithinThisColumn.Any(piece => _checkerBoard.GetAllValidMoveSequences(CheckerColor.White).Any(seq => seq.First().Equals(piece))))
                 {
                     Debug.LogFormat("[Not Chess #{0}] Pressed {1}, but no valid moves can be made from any white piece within this column. Strike.", _moduleId, "ABCDEF"[btn]);
                     Module.HandleStrike();
@@ -170,17 +169,15 @@ public class NotChessScript : MonoBehaviour
 
                 bool isNextStepValid = _movesForInputtedPiece.Any(seq =>
                 {
-                    if (_inputtedCoordinates.Count >= seq.Count + 1)
+                    if (_inputtedCoordinates.Count >= seq.Count)
                         return false;
 
                     for (int i = 1; i < _inputtedCoordinates.Count; i++)
-                    {
-                        if (!seq[i - 1].To.Equals(_inputtedCoordinates[i]))
+                        if (!_inputtedCoordinates[i].Equals(seq[i]))
                             return false;
-                    }
+                    var nextCoord = seq[_inputtedCoordinates.Count];
 
-                    var nextMove = seq[_inputtedCoordinates.Count - 1];
-                    return nextMove.To.X == btn;
+                    return nextCoord.X == btn;
                 });
 
                 if (!isNextStepValid)
@@ -265,6 +262,7 @@ public class NotChessScript : MonoBehaviour
                 _inputtedLetter = null;
                 _inputtedNumber = null;
 
+                var piece = _checkerBoard.GetPieceAt(newCoord);
                 if (_checkerBoard.GetPieceAt(newCoord) == null)
                 {
                     Debug.LogFormat("[Not Chess #{0}] Attempted to start a move from {1}, but there is no piece there. Strike.", _moduleId, newCoord);
@@ -279,18 +277,18 @@ public class NotChessScript : MonoBehaviour
                     return false;
                 }
 
-                var piece = _checkerBoard.GetPieceAt(newCoord);
-                if (!_checkerBoard.GetAllValidMoveSequences(piece.Color).Any(seq => seq.First().From.Equals(piece.Coordinate)))
+                var valid = _checkerBoard.GetAllValidMoveSequences(piece.Color).Any(seq => seq.First().Equals(piece.Coordinate));
+                if (!valid)
                 {
-                    Debug.LogFormat("[Not Chess #{0}] Attempted to start a move from {1}, but no valid moves can be made with this piece. Strike.", _moduleId, newCoord);
+                    Debug.LogFormat("[Not Chess #{0}] Attempted to start a move from {1}, but no valid moves exist. Strike.", _moduleId, newCoord);
                     Module.HandleStrike();
                     return false;
                 }
 
                 _inputtedCoordinates.Add(newCoord);
-                Debug.LogFormat("[Not Chess #{0}] Inputted starting coordinate: {1}", _moduleId, newCoord);
-
                 _movesForInputtedPiece = _checkerBoard.GetMoveSequencesForPieceAt(piece.Coordinate);
+
+                Debug.LogFormat("[Not Chess #{0}] Inputted starting coordinate: {1}", _moduleId, newCoord);
                 Debug.LogFormat("[Not Chess #{0}] Possible moves: {1}", _moduleId, _movesForInputtedPiece.Select(i => i.Join(" ")).Join("; "));
             }
             else
@@ -310,20 +308,19 @@ public class NotChessScript : MonoBehaviour
                 _inputtedNumber = null;
 
                 _inputtedCoordinates.Add(newCoord);
-                var moveMade = new CheckerMove(_inputtedCoordinates[_inputtedCoordinates.Count - 2], _inputtedCoordinates[_inputtedCoordinates.Count - 1], null);
 
-                bool isComplete = false;
-                var validSequences = _checkerBoard.GetMoveSequencesForPieceAt(_inputtedCoordinates.First());
                 bool isPartialValid = false;
-                foreach (var seq in validSequences)
+                bool isComplete = false;
+
+                foreach (var seq in _movesForInputtedPiece)
                 {
                     if (_inputtedCoordinates.Count - 1 > seq.Count)
                         continue;
 
                     bool matches = true;
-                    for (int i = 1; i < _inputtedCoordinates.Count; i++)
+                    for (int i = 0; i < _inputtedCoordinates.Count; i++)
                     {
-                        if (!seq[i - 1].To.Equals(_inputtedCoordinates[i]))
+                        if (!seq[i].Equals(_inputtedCoordinates[i]))
                         {
                             matches = false;
                             break;
@@ -333,9 +330,8 @@ public class NotChessScript : MonoBehaviour
                     if (matches)
                     {
                         isPartialValid = true;
-                        if (_inputtedCoordinates.Count - 1 == seq.Count)
+                        if (_inputtedCoordinates.Count == seq.Count)
                             isComplete = true;
-                        moveMade.CapturedPieces = seq[_inputtedCoordinates.Count - 2].CapturedPieces;
                         break;
                     }
                 }
@@ -355,37 +351,7 @@ public class NotChessScript : MonoBehaviour
 
                 if (isComplete)
                 {
-                    var newBoard = _checkerBoard;
-                    for (int i = 1; i < _inputtedCoordinates.Count; i++)
-                    {
-                        var stepMove = new CheckerMove(
-                            _inputtedCoordinates[i - 1],
-                            _inputtedCoordinates[i],
-                            null
-                        );
-
-                        foreach (var seq in validSequences)
-                        {
-                            if (seq.Count >= i)
-                            {
-                                bool matches = true;
-                                for (int j = 1; j <= i; j++)
-                                {
-                                    if (!seq[j - 1].To.Equals(_inputtedCoordinates[j]))
-                                    {
-                                        matches = false;
-                                        break;
-                                    }
-                                }
-                                if (matches)
-                                {
-                                    stepMove.CapturedPieces = seq[i - 1].CapturedPieces;
-                                    break;
-                                }
-                            }
-                        }
-                        newBoard = newBoard.ApplyMove(stepMove);
-                    }
+                    var newBoard = _checkerBoard.ApplyMoveSequence(_inputtedCoordinates, true);
                     _checkerBoard = newBoard;
 
                     Debug.LogFormat("[Not Chess #{0}] Moves made: ({1})", _moduleId, _inputtedCoordinates.Join(" → "));
@@ -415,10 +381,7 @@ public class NotChessScript : MonoBehaviour
                     }
 
                     var randSequence = blackSequences.PickRandom();
-                    _blacksLastMoves = new List<CheckerCoordinate> { randSequence[0].From };
-                    foreach (var move in randSequence)
-                        _blacksLastMoves.Add(move.To);
-
+                    _blacksLastMoves = new List<CheckerCoordinate>(randSequence);
                     _checkerBoard = _checkerBoard.ApplyMoveSequence(_blacksLastMoves, true);
 
                     Debug.LogFormat("[Not Chess #{0}] Black has made the move: ({1})", _moduleId, _blacksLastMoves.Join(" → "));
@@ -445,7 +408,7 @@ public class NotChessScript : MonoBehaviour
         Debug.LogFormat("[Not Chess #{0}] All possible moves for white: {1}", _moduleId, moves.Select(i => i.Join(" → ")).Join("; "));
     }
 
-    private bool TryBuildMoveFromInput(List<CheckerCoordinate> input, out CheckerMove moveMade, out bool isComplete)
+    private bool TryBuildMoveFromInput(List<CheckerCoordinate> input, out List<CheckerCoordinate> moveMade, out bool isComplete)
     {
         moveMade = null;
         isComplete = false;
@@ -453,35 +416,17 @@ public class NotChessScript : MonoBehaviour
         if (input.Count < 2)
             return false;
 
-        moveMade = new CheckerMove(input[input.Count - 2], input[input.Count - 1], null);
         var validSequences = _checkerBoard.GetMoveSequencesForPieceAt(input[0]);
+
         bool isPartialValid = validSequences.Any(seq =>
-        {
-            if (input.Count - 1 > seq.Count) return false;
-            for (int i = 1; i < input.Count; i++)
-                if (!seq[i - 1].To.Equals(input[i]))
-                    return false;
-            return true;
-        });
+            seq.Take(input.Count).SequenceEqual(input));
 
-        if (!isPartialValid) return false;
+        if (!isPartialValid)
+            return false;
 
-        isComplete = validSequences.Any(seq =>
-        {
-            if (seq.Count != input.Count - 1) return false;
-            for (int i = 1; i < input.Count; i++)
-                if (!seq[i - 1].To.Equals(input[i]))
-                    return false;
-            return true;
-        });
+        isComplete = validSequences.Any(seq => seq.SequenceEqual(input));
 
-        var matchingSeq = validSequences.First(seq =>
-            seq.Take(input.Count - 1)
-               .Select(m => m.To)
-               .SequenceEqual(input.Skip(1))
-        );
-        moveMade.CapturedPieces = matchingSeq[input.Count - 2].CapturedPieces;
-
+        moveMade = input.ToList();
         return true;
     }
 
@@ -847,6 +792,28 @@ public class NotChessScript : MonoBehaviour
 
     private IEnumerator Autosolve()
     {
-        yield break;
+        if (_moduleSolved)
+            yield break;
+        while (!_expectingFinalInput)
+        {
+            while (!_expectingInput)
+                yield return null;
+
+            var validMoves = _checkerBoard.GetAllValidMoveSequences(CheckerColor.White);
+        }
+        if (_moduleSolved)
+            yield break;
+        while (!_expectingInput)
+            yield return null;
+        for (int i = _finalInput.Count; i < _finalAnswer.Length; i++)
+        {
+            if (_inputtedLetter == null)
+            {
+                LetterSels[_finalInput[i].X].OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            NumberSels[_finalInput[i].Y].OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 }
