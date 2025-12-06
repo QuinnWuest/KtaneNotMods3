@@ -27,7 +27,7 @@ public class NotChessScript : MonoBehaviour
     private decimal _moduleCount;
     private string[] _ignoredModules;
 
-    private const int _timerStart = 42;
+    private const int _timerStart = 108;
     private Coroutine _countdownTimer;
 
     private static readonly CheckerBoard _initialCheckerBoard = new CheckerBoard(
@@ -798,8 +798,18 @@ public class NotChessScript : MonoBehaviour
         {
             while (!_expectingInput)
                 yield return null;
-
             var validMoves = _checkerBoard.GetAllValidMoveSequences(CheckerColor.White);
+            _inputtedCoordinates.Clear();
+            _inputtedLetter = null;
+            _inputtedNumber = null;
+            var chosenMove = validMoves.PickRandom();
+            foreach (var m in chosenMove)
+            {
+                LetterSels[m.X].OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                NumberSels[m.Y].OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
         }
         if (_moduleSolved)
             yield break;
@@ -809,10 +819,10 @@ public class NotChessScript : MonoBehaviour
         {
             if (_inputtedLetter == null)
             {
-                LetterSels[_finalInput[i].X].OnInteract();
+                LetterSels[_finalAnswer[i].X].OnInteract();
                 yield return new WaitForSeconds(0.1f);
             }
-            NumberSels[_finalInput[i].Y].OnInteract();
+            NumberSels[_finalAnswer[i].Y].OnInteract();
             yield return new WaitForSeconds(0.1f);
         }
     }
