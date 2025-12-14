@@ -136,7 +136,7 @@ public class RecolourFlashScript : MonoBehaviour
             goto NextSequence;
         }
 
-        logList.Add(string.Format("[Recolour Flash #{0}] Recolour! {1}.", _moduleId, _recolouredCells.Select(i => i.Word + " was replaced by " + i.Colour).Join(", and ")));
+        logList.Add(string.Format("[Recolour Flash #{0}] Recolour! {1}.", _moduleId, _recolouredCells.Select(i => i.Colour + " was replaced by " + i.Word).Join(", and ")));
         _solutions.Add(true);
         for (int i = 0; i < logList.Count; i++)
             Debug.Log(logList[i]);
