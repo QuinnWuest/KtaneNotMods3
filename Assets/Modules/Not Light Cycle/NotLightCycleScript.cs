@@ -364,9 +364,9 @@ public partial class NotLightCycleScript : MonoBehaviour
             var th = GenerateTetraHex();
             hg.ApplyTetraHex(th);
             int connected = CountConnectedCornerPairs(hg);
-            if (connected > 1)
+            if (connected > 2)
                 goto tryAgain;
-            if (connected == 1)
+            if (connected == 2)
                 return hg;
         }
         goto tryAgain;
