@@ -10,4 +10,9 @@ public class HexInfo
         Hex = hex;
         Color = color;
     }
+
+    public override string ToString()
+    {
+        return string.Format("{0}/{1}", Hex, Color);
+    }
 }

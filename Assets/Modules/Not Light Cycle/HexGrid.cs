@@ -1,6 +1,7 @@
 ﻿using NotModdedModulesVol3;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class HexGrid
 {
@@ -35,8 +36,27 @@ public class HexGrid
         return Info.FirstOrDefault(i => i.Hex.Q == hex.Q && i.Hex.R == hex.R);
     }
 
-    public string LogGrid()
+    public string LogGridByTetrahexCount(int tetraCount)
     {
-        return Info.Select(i => string.Format("{0}/{1}", i.Hex, i.Color)).Join(", ");
+        tetraCount = Mathf.Clamp(tetraCount, 0, AppliedTetraHexes.Count);
+
+        var tempInfo = new List<HexInfo>();
+
+        for (int i = 0; i < tetraCount; i++)
+            ApplyTetraHexToInfo(tempInfo, AppliedTetraHexes[i]);
+
+        return tempInfo.Join(", ");
+    }
+
+    private static void ApplyTetraHexToInfo(List<HexInfo> info, TetraHex t)
+    {
+        foreach (var hi in t.HexInfo)
+        {
+            int ix = info.FindIndex(x => x.Hex == hi.Hex);
+            if (ix >= 0)
+                info[ix] = hi;
+            else
+                info.Add(hi);
+        }
     }
 }

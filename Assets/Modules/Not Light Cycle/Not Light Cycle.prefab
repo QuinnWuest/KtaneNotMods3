@@ -3161,7 +3161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1cfb889a07d5fd4e9baed7960bb397f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _colorblindMode: 1
+  _colorblindMode: 0
 --- !u!114 &114612088762785066
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3242,21 +3242,22 @@ MonoBehaviour:
   BombInfo: {fileID: 114267279873187044}
   Audio: {fileID: 114805230328820894}
   ColorblindMode: {fileID: 114580129621159004}
-  LightObjs:
+  ButtonSel: {fileID: 114829517512053218}
+  ColoredLightObjs:
   - {fileID: 1186122625221334}
   - {fileID: 1136064313805208}
   - {fileID: 1151057853914894}
   - {fileID: 1618491492070944}
   - {fileID: 1923775080522380}
   - {fileID: 1411022857129284}
-  LightOffMats:
+  ColoredLightOffMats:
   - {fileID: 2100000, guid: b9f214a16cc9c854ca50586553e17408, type: 2}
   - {fileID: 2100000, guid: fa5e4448932ae5f49972c98e9205ab6f, type: 2}
   - {fileID: 2100000, guid: d4d24595b02d76f4ebb2d0baadee128b, type: 2}
   - {fileID: 2100000, guid: 00bbb9f17b7020647ae542195482870f, type: 2}
   - {fileID: 2100000, guid: 9de561cb2ee7b244aa8c64909791b405, type: 2}
   - {fileID: 2100000, guid: e28258ee9ffdb7747b96d5f231f5aa1e, type: 2}
-  LightOnMats:
+  ColoredLightOnMats:
   - {fileID: 2100000, guid: 48bc97f22947d67439fcfb4662cec82a, type: 2}
   - {fileID: 2100000, guid: 3b2445935abdd454f904b8961f46c1bc, type: 2}
   - {fileID: 2100000, guid: 97e90968313fe07408c02121faca451c, type: 2}
@@ -3270,6 +3271,15 @@ MonoBehaviour:
   - {fileID: 102117789097530638}
   - {fileID: 102690349108409250}
   - {fileID: 102155701013405586}
+  WhiteLightObjs:
+  - {fileID: 1192179092870720}
+  - {fileID: 1202070100431178}
+  - {fileID: 1164959473604640}
+  - {fileID: 1083975211591368}
+  - {fileID: 1885038723060382}
+  - {fileID: 1185123515893678}
+  WhiteLightOffMat: {fileID: 2100000, guid: 9de561cb2ee7b244aa8c64909791b405, type: 2}
+  WhiteLightOnMat: {fileID: 2100000, guid: eb1e3f4234cb752449cc06d4673f87fd, type: 2}
 --- !u!114 &114775749989377302
 MonoBehaviour:
   m_ObjectHideFlags: 1

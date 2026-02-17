@@ -16,6 +16,6 @@ public class TetraHex
 
     public override string ToString()
     {
-        return string.Format("Sequence: {0}; Color: {1}; Hex Positions: {2}", NumberSequence.Join(", "), Color.ToString(), HexInfo.Select(i => i.Hex).Join(", "));
+        return string.Format("Sequence: {0}; Color: {1}; Hex Positions: {2}", NumberSequence.Select(i => i + 1).Join(", "), Color.ToString(), HexInfo.Select(i => i.Hex).Join(", "));
     }
 }
