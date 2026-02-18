@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Xsl;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
 
@@ -20,10 +20,12 @@ public partial class NotLightCycleScript : MonoBehaviour
     public Material[] ColoredLightOffMats;
     public Material[] ColoredLightOnMats;
     public TextMesh[] ColorblindTexts;
+    public Light[] ColoredLightLights;
 
     public GameObject[] WhiteLightObjs;
     public Material WhiteLightOffMat;
     public Material WhiteLightOnMat;
+    public Light[] WhiteLightLights;
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
@@ -33,10 +35,10 @@ public partial class NotLightCycleScript : MonoBehaviour
 
     private HexGrid _hexGrid;
     private static readonly Hex[] _cornerHexPositions = Enumerable.Range(0, 6).Select(i => new Hex(0, 0).GetNeighbor(i).GetNeighbor(i).GetNeighbor(i)).ToArray();
-    private int[] _lightColors = new int[6];
+    private HexColor[] _lightColors = new HexColor[6];
     private HexInfo[] _path;
 
-    private bool _holdingButton;
+    private bool _buttonHeld;
     private bool _buttonTimerTriggered;
     private Coroutine _buttonHoldTimer;
     private bool _inSubmissionMode;
@@ -49,7 +51,7 @@ public partial class NotLightCycleScript : MonoBehaviour
 
     private MarkResult _markResult;
     private List<HexColor> _solutionHexColors = new List<HexColor>();
-    private List<HexColor> _inputtedHexColors = new List<HexColor>();
+    private readonly List<HexColor> _inputtedHexColors = new List<HexColor>();
 
     private static readonly HexColor[] _rgb = new HexColor[] { HexColor.Red, HexColor.Green, HexColor.Blue };
     private bool _goBackwards;
@@ -93,11 +95,15 @@ public partial class NotLightCycleScript : MonoBehaviour
         ButtonSel.OnInteractEnded += ButtonRelease;
 
         _colorblindMode = ColorblindMode.ColorblindModeActive;
-        _lightColors = Enumerable.Range(0, 6).ToArray().Shuffle();
+        _lightColors = Enumerable.Range(0, 6).ToArray().Shuffle().Select(i => (HexColor)i).ToArray();
         for (int i = 0; i < 6; i++)
         {
-            SetLightMaterial(i, _lightColors[i], false);
-            ColorblindTexts[i].text = ((HexColor)_lightColors[i]).ToString();
+            ColoredLightObjs[i].GetComponent<MeshRenderer>().material = ColoredLightOffMats[(int)_lightColors[i]];
+            ColorblindTexts[i].text = (_lightColors[i]).ToString();
+            ColoredLightLights[i].color = ColoredLightObjs[i].GetComponent<MeshRenderer>().material.color;
+            WhiteLightLights[i].enabled = false;
+            ColoredLightLights[i].range *= transform.lossyScale.x;
+            WhiteLightLights[i].range *= transform.lossyScale.x;
         }
         SetColorblindMode(_colorblindMode);
 
@@ -115,7 +121,6 @@ public partial class NotLightCycleScript : MonoBehaviour
             _goBackwards = true;
         _markResult = CalculateMarkedHexes(_path, _goBackwards);
         _solutionHexColors = _markResult.MarkedColors.ToList();
-
 
         Debug.LogFormat("[Not Light Cycle #{0}] {1}", _moduleId, _markResult.StepLogs[0]);
         Debug.LogFormat("[Not Light Cycle #{0}] Starting at Row {1}. Moving {2} the table.", _moduleId, BombInfo.GetSerialNumber()[3], _goBackwards ? "up" : "down");
@@ -137,7 +142,7 @@ public partial class NotLightCycleScript : MonoBehaviour
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
         if (_moduleSolved || _doneWithEverything)
             return false;
-        _holdingButton = true;
+        _buttonHeld = true;
         if (_inSubmissionMode)
         {
             SubmitCurrentColor(_currentLightColorIx);
@@ -153,9 +158,9 @@ public partial class NotLightCycleScript : MonoBehaviour
 
     private void ButtonRelease()
     {
-        if (_moduleSolved || _doneWithEverything)
+        if (_moduleSolved || _doneWithEverything || !_buttonHeld)
             return;
-        _holdingButton = false;
+        _buttonHeld = false;
         if (_boned)
         {
             _boned = false;
@@ -210,7 +215,7 @@ public partial class NotLightCycleScript : MonoBehaviour
 
     private void SubmitCurrentColor(int currentLedIx)
     {
-        var shown = (HexColor)_lightColors[currentLedIx];
+        var shown = _lightColors[currentLedIx];
 
         int step = _inputtedHexColors.Count;
         if (step >= _solutionHexColors.Count)
@@ -221,7 +226,7 @@ public partial class NotLightCycleScript : MonoBehaviour
         {
             Debug.LogFormat("[Not Light Cycle #{0}] Submitted {1}, but {2} was expected. Strike.", _moduleId, shown, expected);
             Module.HandleStrike();
-            _boned = _holdingButton;
+            _boned = _buttonHeld;
             ResetToFirstTetraHex();
             return;
         }
@@ -231,21 +236,18 @@ public partial class NotLightCycleScript : MonoBehaviour
         for (int wLed = 0; wLed < 6; wLed++)
         {
             if (currentLedIx == wLed)
+            {
                 WhiteLightObjs[wLed].GetComponent<MeshRenderer>().material = WhiteLightOnMat;
+                WhiteLightLights[wLed].enabled = true;
+            }
             else
+            {
                 WhiteLightObjs[wLed].GetComponent<MeshRenderer>().material = WhiteLightOffMat;
+                WhiteLightLights[wLed].enabled = false;
+            }
         }
 
-        int total = _solutionHexColors.Count;
-        int submittedSoFar = _inputtedHexColors.Count;
-        bool isLast = (submittedSoFar == total);
-        string clipName = "LCDing";
-        if (isLast)
-            clipName += 6;
-        else
-            clipName += Mathf.Min(submittedSoFar, 5);
-
-        Audio.PlaySoundAtTransform(clipName, transform);
+        Audio.PlaySoundAtTransform("LCDing" + (_inputtedHexColors.Count == _solutionHexColors.Count ? 6 : Mathf.Min(_inputtedHexColors.Count, 5)), transform);
 
         if (_inputtedHexColors.Count == _solutionHexColors.Count)
         {
@@ -261,6 +263,7 @@ public partial class NotLightCycleScript : MonoBehaviour
 
     private void ResetToFirstTetraHex()
     {
+        ButtonSel.OnInteractEnded();
         Debug.LogFormat("[Not Light Cycle #{0}] Resetting to the first tetrahex.", _moduleId);
         _inSubmissionMode = false;
         _buttonTimerTriggered = false;
@@ -289,21 +292,29 @@ public partial class NotLightCycleScript : MonoBehaviour
         if (_tetraHexAnimation != null)
             StopCoroutine(_tetraHexAnimation);
         for (int led = 0; led < 6; led++)
+        {
             WhiteLightObjs[led].GetComponent<MeshRenderer>().material = WhiteLightOffMat;
+            WhiteLightLights[led].enabled = false;
+        }
         _tetraHexAnimation = StartCoroutine(AnimateTetraHex(_hexGrid.AppliedTetraHexes[thix]));
-    }
-
-    private void SetLightMaterial(int ix, int color, bool isOn)
-    {
-        ColoredLightObjs[ix].GetComponent<MeshRenderer>().material = isOn ? ColoredLightOnMats[color] : ColoredLightOffMats[color];
     }
 
     private IEnumerator AnimateTetraHex(TetraHex th)
     {
-        var colorIx = Array.IndexOf(_lightColors, (int)th.Color);
-        _currentLightColorIx = colorIx;
+        _currentLightColorIx = Array.IndexOf(_lightColors, (int)th.Color);
         for (int i = 0; i < 6; i++)
-            SetLightMaterial(i, _lightColors[i], i == colorIx);
+        {
+            if (i == _currentLightColorIx)
+            {
+                ColoredLightObjs[i].GetComponent<MeshRenderer>().material = ColoredLightOnMats[(int)_lightColors[i]];
+                ColoredLightLights[i].enabled = true;
+            }
+            else
+            {
+                ColoredLightObjs[i].GetComponent<MeshRenderer>().material = ColoredLightOffMats[(int)_lightColors[i]];
+                ColoredLightLights[i].enabled = false;
+            }
+        }
         while (true)
         {
             yield return new WaitForSeconds(0.25f);
@@ -312,24 +323,41 @@ public partial class NotLightCycleScript : MonoBehaviour
                 for (int led = 0; led < 6; led++)
                 {
                     if (th.NumberSequence[i] == led)
+                    {
                         WhiteLightObjs[led].GetComponent<MeshRenderer>().material = WhiteLightOnMat;
+                        WhiteLightLights[led].enabled = true;
+                    }
                     else
+                    {
                         WhiteLightObjs[led].GetComponent<MeshRenderer>().material = WhiteLightOffMat;
+                        WhiteLightLights[led].enabled = false;
+                    }
                 }
                 yield return new WaitForSeconds(0.5f);
                 for (int led = 0; led < 6; led++)
+                {
                     WhiteLightObjs[led].GetComponent<MeshRenderer>().material = WhiteLightOffMat;
+                    WhiteLightLights[led].enabled = false;
+                }
             }
             for (int led = 0; led < 6; led++)
+            {
                 WhiteLightObjs[led].GetComponent<MeshRenderer>().material = WhiteLightOffMat;
+                WhiteLightLights[led].enabled = false;
+            }
             yield return new WaitForSeconds(0.25f);
         }
     }
 
     private IEnumerator AnimateLightCycle(int startingIx)
     {
+        float waitTime = 0.75f;
+        float decrement = 0.025f;
         for (int wLed = 0; wLed < 6; wLed++)
+        {
             WhiteLightObjs[wLed].GetComponent<MeshRenderer>().material = WhiteLightOffMat;
+            WhiteLightLights[wLed].enabled = false;
+        }
         while (true)
         {
             for (int ix = startingIx; ix < 6 + startingIx; ix++)
@@ -338,11 +366,18 @@ public partial class NotLightCycleScript : MonoBehaviour
                 {
                     _currentLightColorIx = ix % 6;
                     if (_currentLightColorIx == cLed)
-                        ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOnMats[_lightColors[cLed]];
+                    {
+                        ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOnMats[(int)_lightColors[cLed]];
+                        ColoredLightLights[cLed].enabled = true;
+                    }
                     else
-                        ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOffMats[_lightColors[cLed]];
+                    {
+                        ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOffMats[(int)_lightColors[cLed]];
+                        ColoredLightLights[cLed].enabled = false;
+                    }
                 }
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(Math.Max(waitTime, 0.25f));
+                waitTime -= decrement;
             }
         }
     }
@@ -364,9 +399,9 @@ public partial class NotLightCycleScript : MonoBehaviour
             var th = GenerateTetraHex();
             hg.ApplyTetraHex(th);
             int connected = CountConnectedCornerPairs(hg);
-            if (connected > 2)
+            if (connected > 1)
                 goto tryAgain;
-            if (connected == 2)
+            if (connected == 1)
                 return hg;
         }
         goto tryAgain;
@@ -595,7 +630,7 @@ public partial class NotLightCycleScript : MonoBehaviour
     private int CountConnectedCornerPairs(HexGrid hg)
     {
         int count = 0;
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 3; i++)
             if (IsReachable(hg, _cornerHexPositions[i], _cornerHexPositions[(i + 3) % 6]))
                 count++;
         return count;
@@ -705,23 +740,35 @@ public partial class NotLightCycleScript : MonoBehaviour
         for (int led = 0; led < 6; led++)
         {
             WhiteLightObjs[led].GetComponent<MeshRenderer>().material = WhiteLightOffMat;
-            ColoredLightObjs[led].GetComponent<MeshRenderer>().material = ColoredLightOffMats[_lightColors[led]];
+            WhiteLightLights[led].enabled = false;
+            ColoredLightObjs[led].GetComponent<MeshRenderer>().material = ColoredLightOffMats[(int)_lightColors[led]];
+            ColoredLightLights[led].enabled = false;
         }
         for (int ix = 0; ix < 6; ix++)
         {
             WhiteLightObjs[ix].GetComponent<MeshRenderer>().material = WhiteLightOnMat;
+            WhiteLightLights[ix].enabled = true;
             for (int cLed = 0; cLed < 6; cLed++)
             {
                 if (ix == cLed)
-                    ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOnMats[_lightColors[cLed]];
+                {
+                    ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOnMats[(int)_lightColors[cLed]];
+                    ColoredLightLights[cLed].enabled = true;
+                }
                 else
-                    ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOffMats[_lightColors[cLed]];
+                {
+                    ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOffMats[(int)_lightColors[cLed]];
+                    ColoredLightLights[cLed].enabled = false;
+                }
             }
             Audio.PlaySoundAtTransform("LCDing" + (ix + 1), transform);
             yield return new WaitForSeconds(0.05f);
         }
         for (int cLed = 0; cLed < 6; cLed++)
-            ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOffMats[_lightColors[cLed]];
+        {
+            ColoredLightObjs[cLed].GetComponent<MeshRenderer>().material = ColoredLightOffMats[(int)_lightColors[cLed]];
+            ColoredLightLights[cLed].enabled = false;
+        }
         _moduleSolved = true;
         Module.HandlePass();
         yield break;
@@ -731,14 +778,76 @@ public partial class NotLightCycleScript : MonoBehaviour
     private readonly string TwitchHelpMessage = "";
 #pragma warning restore 0414
 
-    // Taken from Colored Switches TP support, with a few changes.
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        yield break;
+        command = Regex.Replace(command.ToLowerInvariant().Trim(), @"^\s+", " ");
+        var m = Regex.Match(command, @"^\s*(tap|next|continue)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (m.Success)
+        {
+            yield return null;
+            ButtonSel.OnInteract();
+            yield return new WaitForSeconds(0.1f);
+            ButtonSel.OnInteractEnded();
+            yield break;
+        }
+        var cmds = command.Split(' ');
+        if (cmds[0] != "submit")
+            yield break;
+        var cList = new List<int>();
+        for (int i = 1; i < cmds.Length; i++)
+        {
+            string cmd = cmds[i];
+            m = Regex.Match(cmd, @"\s*(?<color>(blue|b|green|g|magenta|m|red|r|white|w|yellow|y))\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!m.Success)
+                yield break;
+            cList.Add("bgmrwy".IndexOf(m.Groups["color"].Value[0]));
+        }
+        yield return null;
+        yield return "solve";
+        yield return "strike";
+        ButtonSel.OnInteract();
+        while (!_buttonTimerTriggered)
+            yield return null;
+        foreach (var color in cList)
+        {
+            int ix = Array.IndexOf(_lightColors, color);
+            while (_currentLightColorIx != ix)
+                yield return null;
+            if (_buttonHeld)
+                ButtonSel.OnInteractEnded();
+            else
+                ButtonSel.OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 
     private IEnumerator TwitchHandleForcedSolve()
     {
+        if (!_inSubmissionMode)
+        {
+            while (_thIx != _hexGrid.AppliedTetraHexes.Count - 1)
+            {
+                ButtonSel.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                ButtonSel.OnInteractEnded();
+                yield return new WaitForSeconds(0.1f);
+            }
+            ButtonSel.OnInteract();
+            while (!_buttonTimerTriggered)
+                yield return null;
+        }
+        for (int i = _inputtedHexColors.Count; i < _solutionHexColors.Count; i++)
+        {
+            while (_lightColors[_currentLightColorIx] != _solutionHexColors[i])
+                yield return null;
+            if (_buttonHeld)
+                ButtonSel.OnInteractEnded();
+            else
+                ButtonSel.OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
+        while (!_moduleSolved)
+            yield return true;
         yield break;
     }
 }
