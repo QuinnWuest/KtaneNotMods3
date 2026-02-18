@@ -169,7 +169,7 @@ public class NotOrientationCubeScript : MonoBehaviour
             }
             if (i == 2 || i == 3)
             {
-                Audio.PlaySoundAtTransform("Servo", ViewDialA.transform);
+                Audio.PlaySoundAtTransform("NotOrientationCubeServo", ViewDialA.transform);
                 _currentOrientation = (_currentOrientation + (i * 2 - 1)) % 4;
                 if (_rotateViewDialA != null)
                     StopCoroutine(_rotateViewDialA);

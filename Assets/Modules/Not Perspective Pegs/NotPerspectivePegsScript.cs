@@ -34,7 +34,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
         new int[5][] { new int[5] { 2, 1, 0, 0, 0 },  new int[5] { 3, 2, 1, 0, 0 }, new int[5] { 4, 3, 2, 1, 0 }, new int[5] { 4, 4, 3, 2, 1 }, new int[5] { 4, 4, 4, 3, 2 } }
     };
 
-    private static readonly string[] _flashSounds = new string[] { "PP0", "PP1", "PP2", "PP3", "PP4" };
+    private static readonly string[] _flashSounds = new string[] { "NotPerspectivePegs0", "NotPerspectivePegs1", "NotPerspectivePegs2", "NotPerspectivePegs3", "NotPerspectivePegs4" };
     private static readonly string[] _colorNames = new string[] { "BLUE", "GREEN", "PURPLE", "RED", "YELLOW" };
     private static readonly string[] _pegPositions = new string[] { "TOP", "TOP-RIGHT", "BOTTOM-RIGHT", "BOTTOM-LEFT", "TOP-LEFT" };
 
@@ -92,7 +92,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
 
     private void Activate()
     {
-        Audio.PlaySoundAtTransform("PPActivate", transform);
+        Audio.PlaySoundAtTransform("NotPerspectivePegsActivate", transform);
         StartCoroutine(RaisePegs());
     }
 
@@ -205,7 +205,7 @@ public class NotPerspectivePegsScript : MonoBehaviour
     private IEnumerator SolveAnimation()
     {
         yield return new WaitForSeconds(0.5f);
-        Audio.PlaySoundAtTransform("PPSolveSound", transform);
+        Audio.PlaySoundAtTransform("NotPerspectivePegsSolve", transform);
         var duration = 0.05f;
         var elapsed = 0f;
         while (elapsed < duration)

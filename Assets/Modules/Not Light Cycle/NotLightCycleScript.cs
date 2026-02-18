@@ -247,7 +247,7 @@ public partial class NotLightCycleScript : MonoBehaviour
             }
         }
 
-        Audio.PlaySoundAtTransform("LCDing" + (_inputtedHexColors.Count == _solutionHexColors.Count ? 6 : Mathf.Min(_inputtedHexColors.Count, 5)), transform);
+        Audio.PlaySoundAtTransform("NotLightCycleDing" + (_inputtedHexColors.Count == _solutionHexColors.Count ? 6 : Mathf.Min(_inputtedHexColors.Count, 5)), transform);
 
         if (_inputtedHexColors.Count == _solutionHexColors.Count)
         {
@@ -761,7 +761,7 @@ public partial class NotLightCycleScript : MonoBehaviour
                     ColoredLightLights[cLed].enabled = false;
                 }
             }
-            Audio.PlaySoundAtTransform("LCDing" + (ix + 1), transform);
+            Audio.PlaySoundAtTransform("NotLightCycleDing" + (ix + 1), transform);
             yield return new WaitForSeconds(0.05f);
         }
         for (int cLed = 0; cLed < 6; cLed++)

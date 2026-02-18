@@ -95,7 +95,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
             ArrowBtnSels[btn].AddInteractionPunch(0.5f);
             if (_moduleSolved || _isAnimating)
                 return false;
-            Audio.PlaySoundAtTransform("SPPress", transform);
+            Audio.PlaySoundAtTransform("NotSymbolicPasswordPress", transform);
             MovePosition(btn, false);
             for (int img = 0; img < SymbolObjs.Length; img++)
                 SymbolObjs[img].GetComponent<MeshRenderer>().material = SymbolMats[_imageGrid[_currentPosition[img]]];
@@ -184,7 +184,7 @@ public class NotSymbolicPasswordScript : MonoBehaviour
     {
         _isAnimating = true;
         if (_currentStage != 0)
-            Audio.PlaySoundAtTransform("SPCorrect", transform);
+            Audio.PlaySoundAtTransform("NotSymbolicPasswordCorrect", transform);
         for (int i = 0; i < 37; i++)
         {
             for (int obj = 0; obj < 6; obj++)

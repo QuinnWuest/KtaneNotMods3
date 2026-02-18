@@ -54,7 +54,7 @@ public class NotDoubleOhScript : MonoBehaviour
         "flip your position vertically across the entire 8×8 grid."
     };
     private static readonly string _buttonSymbols = "↕↔⇔⇕";
-    private static readonly string[] _soundNames = new string[4] { "DoubleOPress1", "DoubleOPress2", "DoubleOPress3", "DoubleOPress4" };
+    private static readonly string[] _soundNames = new string[4] { "NotDoubleOhPress1", "NotDoubleOhPress2", "NotDoubleOhPress3", "NotDoubleOhPress4" };
 
     private void Start()
     {
@@ -118,7 +118,7 @@ public class NotDoubleOhScript : MonoBehaviour
                     {
                         _moduleSolved = true;
                         Module.HandlePass();
-                        Audio.PlaySoundAtTransform("DoubleOSolve", transform);
+                        Audio.PlaySoundAtTransform("NotDoubleOhSolve", transform);
                         Debug.LogFormat("[Not Double-Oh #{0}] Successfully travelled to all goal positions in order. Module solved.", _moduleId);
                     }
                 }

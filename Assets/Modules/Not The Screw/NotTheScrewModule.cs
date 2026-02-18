@@ -207,7 +207,7 @@ public partial class NotTheScrewModule : MonoBehaviour
         //unscrew
         if (_screwInsert && n == _screwLoc && !_coroutineRunning && !_moduleSolved)
         {
-            Audio.PlaySoundAtTransform("screwdriver_sound", _holes[n].transform);
+            Audio.PlaySoundAtTransform("NotTheScrewScrewdriver", _holes[n].transform);
             StartCoroutine(AnimateScrew(_screwLoc, screwIn: false));
             if (!_moduleSolved)
                 _screenText.text = "";
@@ -217,7 +217,7 @@ public partial class NotTheScrewModule : MonoBehaviour
         if (!_screwInsert && !_coroutineRunning && !_moduleSolved)
         {
             _screwLoc = n;
-            Audio.PlaySoundAtTransform("screwdriver_sound", _holes[n].transform);
+            Audio.PlaySoundAtTransform("NotTheScrewScrewdriver", _holes[n].transform);
             StartCoroutine(AnimateScrew(_screwLoc, screwIn: true));
             if (!_moduleSolved)
                 _screenText.text = "?";

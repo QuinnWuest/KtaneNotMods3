@@ -127,7 +127,7 @@ public class QuadrupleSimpletontScript : MonoBehaviour
                         goto strike;
                 _moduleSolved = true;
                 Module.HandlePass();
-                Audio.PlaySoundAtTransform("Victory", transform);
+                Audio.PlaySoundAtTransform("QuadrupleSimpletontVictory", transform);
                 for (int i = 0; i < 4; i++)
                     ButtonTexts[i].text = "VICTORY!";
                 Debug.LogFormat("[Quadruple Simpleton't #{0}] Successfully submitted {1}. Module solved.", _moduleId, _presses.Select(i => _btnPosNames[_btnPos[i]]).Join(", "));

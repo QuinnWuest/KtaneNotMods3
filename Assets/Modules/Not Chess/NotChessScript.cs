@@ -93,7 +93,7 @@ public class NotChessScript : MonoBehaviour
                 return false;
 
             LetterSels[btn].AddInteractionPunch(0.5f);
-            Audio.PlaySoundAtTransform("CHkey", LetterSels[btn].transform);
+            Audio.PlaySoundAtTransform("NotChessKey", LetterSels[btn].transform);
 
             if (!_expectingInput)
             {
@@ -202,7 +202,7 @@ public class NotChessScript : MonoBehaviour
                 return false;
 
             NumberSels[btn].AddInteractionPunch(0.5f);
-            Audio.PlaySoundAtTransform("CHkey", NumberSels[btn].transform);
+            Audio.PlaySoundAtTransform("NotChessKey", NumberSels[btn].transform);
 
             if (!_expectingInput)
             {
@@ -675,11 +675,11 @@ public class NotChessScript : MonoBehaviour
             if (time == 40)
                 _expectingInput = true;
             if (time % 2 == 0 && time <= 40 && time > 20)
-                Audio.PlaySoundAtTransform("CHbeep", transform);
+                Audio.PlaySoundAtTransform("NotChessBeep", transform);
             if (time <= 10 || (time <= 20 && time % 2 == 0))
-                Audio.PlaySoundAtTransform("CHalarm", transform);
+                Audio.PlaySoundAtTransform("NotChessAlarm", transform);
             yield return new WaitForSeconds(0.9f);
-            Audio.PlaySoundAtTransform("CHtick", transform);
+            Audio.PlaySoundAtTransform("NotChessTick", transform);
             yield return new WaitForSeconds(0.1f);
         }
         _lockModule = true;
@@ -700,7 +700,7 @@ public class NotChessScript : MonoBehaviour
 
     private IEnumerator ResetCountdown()
     {
-        Audio.PlaySoundAtTransform("CHreset", transform);
+        Audio.PlaySoundAtTransform("NotChessReset", transform);
         DisplayText.text = "-";
         for (int i = 0; i < 24; i++)
         {
@@ -727,7 +727,7 @@ public class NotChessScript : MonoBehaviour
     {
         if (_countdownTimer != null)
             StopCoroutine(_countdownTimer);
-        Audio.PlaySoundAtTransform("CHsystemfailure", transform);
+        Audio.PlaySoundAtTransform("NotChessSystemFailure", transform);
         for (int i = 0; i < 168; i++)
         {
             string randStr = "abcdefghijk0123456789-";
@@ -752,13 +752,13 @@ public class NotChessScript : MonoBehaviour
     private IEnumerator SolveAnimation()
     {
         yield return new WaitForSeconds(1.5f);
-        Audio.PlaySoundAtTransform("CHfailsafe", transform);
+        Audio.PlaySoundAtTransform("NotChessFailsafe", transform);
         int interval = 54;
         for (int i = 0; i < 216; i++)
         {
             string randStr = "abcdefghijk0123456789-";
             if (i % interval == 0)
-                Audio.PlaySoundAtTransform("CHtick", transform);
+                Audio.PlaySoundAtTransform("NotChessTick", transform);
             string strA = i < interval * 1 ? randStr[Rnd.Range(0, randStr.Length)].ToString() : "g";
             string strB = i < interval * 2 ? randStr[Rnd.Range(0, randStr.Length)].ToString() : "-";
             string strC = i < interval * 3 ? randStr[Rnd.Range(0, randStr.Length)].ToString() : "g";
