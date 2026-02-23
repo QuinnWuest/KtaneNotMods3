@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Rnd = UnityEngine.Random;
 
 public partial class PerspecticolourFlashScript : MonoBehaviour
 {
@@ -46,36 +47,36 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
 
     private static readonly Cube[] _cubeDiagram = new Cube[30]
     {
-        new Cube(new Coord(-1, -1, -2), new Colour[] {Colour.Red, Colour.Yellow, Colour.Green, Colour.Blue, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(-1, 0, -2),  new Colour[] {Colour.Red, Colour.Green, Colour.Yellow, Colour.Blue, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(0, 0, -2),   new Colour[] {Colour.Red, Colour.Blue, Colour.Yellow, Colour.Green, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(-1, -1, -1), new Colour[] {Colour.Red, Colour.Magenta, Colour.Yellow, Colour.Green, Colour.Blue, Colour.White } ),
-        new Cube(new Coord(0, -1, -1),  new Colour[] {Colour.Red, Colour.White, Colour.Yellow, Colour.Green, Colour.Blue, Colour.Magenta } ),
-        new Cube(new Coord(0, 0, -1),   new Colour[] {Colour.Yellow, Colour.Red, Colour.Green, Colour.Blue, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(0, 1, -1),   new Colour[] {Colour.Yellow, Colour.Green, Colour.Red, Colour.Blue, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(1, 1, -1),   new Colour[] {Colour.Yellow, Colour.Blue, Colour.Red, Colour.Green, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(-2, 0, 0),   new Colour[] {Colour.Yellow, Colour.Magenta, Colour.Red, Colour.Green, Colour.Blue, Colour.White } ),
-        new Cube(new Coord(-2, 1, 0),   new Colour[] {Colour.Yellow, Colour.White, Colour.Red, Colour.Green, Colour.Blue, Colour.Magenta } ),
-        new Cube(new Coord(-1, -1, 0),  new Colour[] {Colour.Green, Colour.Red, Colour.Yellow, Colour.Blue, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(-1, 0, 0),   new Colour[] {Colour.Green, Colour.Yellow, Colour.Red, Colour.Blue, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(0, -2, 0),   new Colour[] {Colour.Green, Colour.Blue, Colour.Red, Colour.Yellow, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(0, 1, 0),    new Colour[] {Colour.Green, Colour.Magenta, Colour.Red, Colour.Yellow, Colour.Blue, Colour.White } ),
-        new Cube(new Coord(0, 2, 0),    new Colour[] {Colour.Green, Colour.White, Colour.Red, Colour.Yellow, Colour.Blue, Colour.Magenta } ),
-        new Cube(new Coord(1, -2, 0),   new Colour[] {Colour.Blue, Colour.Red, Colour.Yellow, Colour.Green, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(1, -1, 0),   new Colour[] {Colour.Blue, Colour.Yellow, Colour.Red, Colour.Green, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(1, 0, 0),    new Colour[] {Colour.Blue, Colour.Green, Colour.Red, Colour.Yellow, Colour.Magenta, Colour.White } ),
-        new Cube(new Coord(1, 1, 0),    new Colour[] {Colour.Blue, Colour.Magenta, Colour.Red, Colour.Yellow, Colour.Green, Colour.White } ),
-        new Cube(new Coord(2, 0, 0),    new Colour[] {Colour.Blue, Colour.White, Colour.Red, Colour.Yellow, Colour.Green, Colour.Magenta } ),
-        new Cube(new Coord(2, 1, 0),    new Colour[] {Colour.Magenta, Colour.Red, Colour.Yellow, Colour.Green, Colour.Blue, Colour.White } ),
-        new Cube(new Coord(-1, 0, 1),   new Colour[] {Colour.Magenta, Colour.Yellow, Colour.Red, Colour.Green, Colour.Blue, Colour.White } ),
-        new Cube(new Coord(-1, 1, 1),   new Colour[] {Colour.Magenta, Colour.Green, Colour.Red, Colour.Yellow, Colour.Blue, Colour.White } ),
-        new Cube(new Coord(-1, 2, 1),   new Colour[] {Colour.Magenta, Colour.Blue, Colour.Red, Colour.Yellow, Colour.Green, Colour.White } ),
-        new Cube(new Coord(0, -2, 1),   new Colour[] {Colour.Magenta, Colour.White, Colour.Red, Colour.Yellow, Colour.Green, Colour.Blue } ),
-        new Cube(new Coord(0, -1, 1),   new Colour[] {Colour.White, Colour.Red, Colour.Yellow, Colour.Green, Colour.Blue, Colour.Magenta } ),
-        new Cube(new Coord(0, 2, 1),    new Colour[] {Colour.White, Colour.Yellow, Colour.Red, Colour.Green, Colour.Blue, Colour.Magenta } ),
-        new Cube(new Coord(1, -1, 1),   new Colour[] {Colour.White, Colour.Green, Colour.Red, Colour.Yellow, Colour.Blue, Colour.Magenta } ),
-        new Cube(new Coord(0, -1, 2),   new Colour[] {Colour.White, Colour.Blue, Colour.Red, Colour.Yellow, Colour.Green, Colour.Magenta } ),
-        new Cube(new Coord(0, 0, 2),    new Colour[] {Colour.White, Colour.Magenta, Colour.Red, Colour.Yellow, Colour.Green, Colour.Blue } )
+        new Cube(new Coord(-1, -1, -2), new Colour[] { Colour.Magenta, Colour.Red, Colour.Blue, Colour.White, Colour.Yellow, Colour.Green } ),
+        new Cube(new Coord(-1, 0, -2),  new Colour[] { Colour.Red, Colour.Green, Colour.Yellow, Colour.Blue, Colour.Magenta, Colour.White } ),
+        new Cube(new Coord(0, 0, -2),   new Colour[] { Colour.Magenta, Colour.White, Colour.Blue, Colour.Red, Colour.Green, Colour.Yellow } ),
+        new Cube(new Coord(-1, -1, -1), new Colour[] { Colour.Red, Colour.Green, Colour.Blue, Colour.Magenta, Colour.Yellow, Colour.White } ),
+        new Cube(new Coord(0, -1, -1),  new Colour[] { Colour.White, Colour.Magenta, Colour.Yellow, Colour.Red, Colour.Blue, Colour.Green } ),
+        new Cube(new Coord(0, 0, -1),   new Colour[] { Colour.Green, Colour.White, Colour.Blue, Colour.Yellow, Colour.Red, Colour.Magenta } ),
+        new Cube(new Coord(0, 1, -1),   new Colour[] { Colour.Blue, Colour.Red, Colour.White, Colour.Magenta, Colour.Yellow, Colour.Green } ),
+        new Cube(new Coord(1, 1, -1),   new Colour[] { Colour.Red, Colour.White, Colour.Green, Colour.Yellow, Colour.Blue, Colour.Magenta } ),
+        new Cube(new Coord(-2, 0, 0),   new Colour[] { Colour.Magenta, Colour.White, Colour.Red, Colour.Yellow, Colour.Blue, Colour.Green } ),
+        new Cube(new Coord(-2, 1, 0),   new Colour[] { Colour.Magenta, Colour.Blue, Colour.Green, Colour.Red, Colour.White, Colour.Yellow } ),
+        new Cube(new Coord(-1, -1, 0),  new Colour[] { Colour.Magenta, Colour.Green, Colour.Blue, Colour.White, Colour.Red, Colour.Yellow } ),
+        new Cube(new Coord(-1, 0, 0),   new Colour[] { Colour.Blue, Colour.Magenta, Colour.Green, Colour.Red, Colour.White, Colour.Yellow } ),
+        new Cube(new Coord(0, -2, 0),   new Colour[] { Colour.Yellow, Colour.Green, Colour.Red, Colour.White, Colour.Magenta, Colour.Blue } ),
+        new Cube(new Coord(0, 1, 0),    new Colour[] { Colour.White, Colour.Blue, Colour.Yellow, Colour.Red, Colour.Magenta, Colour.Green } ),
+        new Cube(new Coord(0, 2, 0),    new Colour[] { Colour.White, Colour.Green, Colour.Blue, Colour.Magenta, Colour.Red, Colour.Yellow } ),
+        new Cube(new Coord(1, -2, 0),   new Colour[] { Colour.Blue, Colour.Red, Colour.Yellow, Colour.Green, Colour.Magenta, Colour.White } ),
+        new Cube(new Coord(1, -1, 0),   new Colour[] { Colour.Magenta, Colour.White, Colour.Yellow, Colour.Blue, Colour.Green, Colour.Red } ),
+        new Cube(new Coord(1, 0, 0),    new Colour[] { Colour.Red, Colour.Blue, Colour.Green, Colour.White, Colour.Yellow, Colour.Magenta } ),
+        new Cube(new Coord(1, 1, 0),    new Colour[] { Colour.Magenta, Colour.Green, Colour.White, Colour.Red, Colour.Blue, Colour.Yellow } ),
+        new Cube(new Coord(2, 0, 0),    new Colour[] { Colour.Red, Colour.White, Colour.Magenta, Colour.Yellow, Colour.Blue, Colour.Green } ),
+        new Cube(new Coord(2, 1, 0),    new Colour[] { Colour.Green, Colour.White, Colour.Blue, Colour.Magenta, Colour.Yellow, Colour.Red } ),
+        new Cube(new Coord(-1, 0, 1),   new Colour[] { Colour.Yellow, Colour.White, Colour.Red, Colour.Magenta, Colour.Blue, Colour.Green } ),
+        new Cube(new Coord(-1, 1, 1),   new Colour[] { Colour.Magenta, Colour.Yellow, Colour.Blue, Colour.Green, Colour.Red, Colour.White } ),
+        new Cube(new Coord(-1, 2, 1),   new Colour[] { Colour.Green, Colour.Yellow, Colour.White, Colour.Blue, Colour.Magenta, Colour.Red } ),
+        new Cube(new Coord(0, -2, 1),   new Colour[] { Colour.White, Colour.Green, Colour.Blue, Colour.Red, Colour.Magenta, Colour.Yellow } ),
+        new Cube(new Coord(0, -1, 1),   new Colour[] { Colour.White, Colour.Blue, Colour.Red, Colour.Yellow, Colour.Green, Colour.Magenta } ),
+        new Cube(new Coord(0, 2, 1),    new Colour[] { Colour.Green, Colour.Blue, Colour.White, Colour.Red, Colour.Magenta, Colour.Yellow } ),
+        new Cube(new Coord(1, -1, 1),   new Colour[] { Colour.Green, Colour.White, Colour.Blue, Colour.Magenta, Colour.Red, Colour.Yellow } ),
+        new Cube(new Coord(0, -1, 2),   new Colour[] { Colour.Red, Colour.Yellow, Colour.White, Colour.Blue, Colour.Magenta, Colour.Green } ),
+        new Cube(new Coord(0, 0, 2),    new Colour[] { Colour.Yellow, Colour.Blue, Colour.Green, Colour.White, Colour.Red, Colour.Magenta } ),
     };
 
     private Cube[] _currentCubes = new Cube[2];
@@ -106,6 +107,83 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
         _cubeByCoord = new Dictionary<Coord, Cube>();
         for (int i = 0; i < _cubeDiagram.Length; i++)
             _cubeByCoord[_cubeDiagram[i].Coord] = _cubeDiagram[i];
+    }
+
+    private static void DumpRotatedCubeDiagram()
+    {
+        var list = new List<string>();
+        for (int i = 0; i < _cubeDiagram.Length; i++)
+        {
+            Cube c = _cubeDiagram[i];
+            Colour[] rotated = RandomRotateFaces(c.FaceInfo);
+
+            string line = string.Format(
+                "new Cube(new Coord({0}, {1}, {2}), {3} ),",
+                c.Coord.X, c.Coord.Y, c.Coord.Z, FacesToCode(rotated)
+            );
+
+            list.Add(line);
+        }
+        Debug.Log(list.Join("\n"));
+    }
+
+    private static string FacesToCode(Colour[] f)
+    {
+        return string.Format(
+            "new Colour[] {{ Colour.{0}, Colour.{1}, Colour.{2}, Colour.{3}, Colour.{4}, Colour.{5} }}",
+            f[0], f[1], f[2], f[3], f[4], f[5]
+        );
+    }
+
+    private static Colour[] RandomRotateFaces(Colour[] faces)
+    {
+        Colour[] f = new Colour[6];
+        for (int i = 0; i < 6; i++)
+            f[i] = faces[i];
+
+        int rots = Rnd.Range(6, 12);
+        for (int i = 0; i < rots; i++)
+        {
+            int axis = Rnd.Range(0, 3);
+            if (axis == 0)
+                RotateX(f);
+            else if (axis == 1)
+                RotateY(f);
+            else
+                RotateZ(f);
+        }
+
+        return f;
+    }
+
+    private static void RotateX(Colour[] f)
+    {
+        // Top -> Front -> Bottom -> Back -> Top
+        Colour t = f[0];
+        f[0] = f[1];
+        f[1] = f[5];
+        f[5] = f[3];
+        f[3] = t;
+    }
+
+    private static void RotateY(Colour[] f)
+    {
+        // Front -> Right -> Back -> Left -> Front
+        Colour t = f[1];
+        f[1] = f[2];
+        f[2] = f[3];
+        f[3] = f[4];
+        f[4] = t;
+    }
+
+    private static void RotateZ(Colour[] f)
+    {
+        // Top -> Left -> Bottom -> Right -> Top
+        Colour t = f[0];
+        f[0] = f[4];
+        f[4] = f[5];
+        f[5] = f[2];
+        f[2] = t;
     }
 
     private void Update()
@@ -151,7 +229,7 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
             if (_moduleSolved)
                 return false;
 
-            bool isPush = (btn == 0);
+            bool isPush = btn == 1;
 
             AttemptMove(isPush);
 

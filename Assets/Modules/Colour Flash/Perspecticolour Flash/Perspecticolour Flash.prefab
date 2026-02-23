@@ -709,7 +709,7 @@ TextMesh:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1226622999397836}
-  m_Text: PERSPECTICOLOUR
+  m_Text: PCF
   m_OffsetZ: 0
   m_CharacterSize: 1
   m_LineSpacing: 0
