@@ -97,6 +97,7 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
 
         _currentCubes = Enumerable.Range(0, _cubeDiagram.Length).ToArray().Shuffle().Take(2).Select(c => _cubeDiagram[c]).ToArray();
 
+        Debug.LogFormat("[Perspecticolour Flash #{0}] Faces are ordered: Top, Front, Right, Back, Left, Bottom.", _moduleId);
         Debug.LogFormat("[Perspecticolour Flash #{0}] Word cube: {1}", _moduleId, _currentCubes[0]);
         Debug.LogFormat("[Perspecticolour Flash #{0}] Colour cube: {1}", _moduleId, _currentCubes[1]);
 
@@ -105,6 +106,8 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
         _cubeByCoord = new Dictionary<Coord, Cube>();
         for (int i = 0; i < _cubeDiagram.Length; i++)
             _cubeByCoord[_cubeDiagram[i].Coord] = _cubeDiagram[i];
+
+        Debug.LogFormat("[Perspecticolour Flash #{0}] The active cube is the {1} cube.", _moduleId, new[] { "Word", "Colour" }[GetActiveCubeIndex(_currentCubes[0], _currentCubes[1])]);
     }
 
     private void Update()
@@ -195,14 +198,17 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
         Cube next;
         if (!_cubeByCoord.TryGetValue(destination, out next))
         {
-            Debug.LogFormat("[Perspecticolour Flash #{0}] Invalid move: {1} from {2} to {3}. Strike.", _moduleId, dir, _currentCubes[active].Coord, destination);
+            Debug.LogFormat("[Perspecticolour Flash #{0}] Attempted to move the active cube from {2} to {3}. Strike.", _moduleId, dir, _currentCubes[active].Coord, destination);
             Module.HandleStrike();
             return;
         }
 
-        Debug.LogFormat("[Perspecticolour Flash #{0}] Moved {1} Cube from {2} to {3}.", _moduleId, active == 0 ? "Word" : "Colour", _currentCubes[active].Coord, destination);
+        Debug.LogFormat("[Perspecticolour Flash #{0}] Moved the {1} Cube to: {2}.", _moduleId, active == 0 ? "Word" : "Colour", _currentCubes[active]);
+        
 
         _currentCubes[active] = next;
+        int newActive = GetActiveCubeIndex(_currentCubes[0], _currentCubes[1]);
+        Debug.LogFormat("[Perspecticolour Flash #{0}] The active cube is now the {1} cube.", _moduleId, new[] { "Word", "Colour" }[newActive]);
         UpdateScreen();
 
         if (_currentCubes[0].IsEqualCoord(_currentCubes[1]))

@@ -132,7 +132,6 @@ GameObject:
   - component: {fileID: 114092170957684534}
   - component: {fileID: 114886906846259290}
   - component: {fileID: 114940472226758482}
-  - component: {fileID: 114357861059564744}
   m_Layer: 0
   m_Name: Perspecticolour Flash
   m_TagString: Untagged
@@ -830,18 +829,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   HighlightScale: {x: 1, y: 1, z: 1}
   OutlineAmount: 0
---- !u!114 &114357861059564744
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1231941279084280}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adf69c2de51bd3c43bbd9bc22578ee08, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _seed: 1
 --- !u!114 &114531594807900266
 MonoBehaviour:
   m_ObjectHideFlags: 1

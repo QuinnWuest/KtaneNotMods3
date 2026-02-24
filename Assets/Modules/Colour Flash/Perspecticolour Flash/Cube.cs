@@ -17,7 +17,7 @@ public partial class PerspecticolourFlashScript
 
         public override string ToString()
         {
-            return string.Format("{0}: {1}", FaceInfo.Select(f => f.ToString()[0]).Join(""), Coord);
+            return string.Format("{0} ({1})", Coord, FaceInfo.Select(f => f.ToString()[0]).Join(""));
         }
 
         public Colour GetColourFromFace(CubeFace face)
