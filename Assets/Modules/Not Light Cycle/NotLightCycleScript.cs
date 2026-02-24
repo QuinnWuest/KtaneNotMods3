@@ -301,7 +301,7 @@ public partial class NotLightCycleScript : MonoBehaviour
 
     private IEnumerator AnimateTetraHex(TetraHex th)
     {
-        _currentLightColorIx = Array.IndexOf(_lightColors, (int)th.Color);
+        _currentLightColorIx = Array.IndexOf(_lightColors, th.Color);
         for (int i = 0; i < 6; i++)
         {
             if (i == _currentLightColorIx)
@@ -786,21 +786,21 @@ public partial class NotLightCycleScript : MonoBehaviour
         {
             yield return null;
             ButtonSel.OnInteract();
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.2f);
             ButtonSel.OnInteractEnded();
             yield break;
         }
         var cmds = command.Split(' ');
         if (cmds[0] != "submit")
             yield break;
-        var cList = new List<int>();
+        var cList = new List<HexColor>();
         for (int i = 1; i < cmds.Length; i++)
         {
             string cmd = cmds[i];
             m = Regex.Match(cmd, @"\s*(?<color>(blue|b|green|g|magenta|m|red|r|white|w|yellow|y))\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             if (!m.Success)
                 yield break;
-            cList.Add("bgmrwy".IndexOf(m.Groups["color"].Value[0]));
+            cList.Add((HexColor)"bgmrwy".IndexOf(m.Groups["color"].Value[0]));
         }
         yield return null;
         yield return "solve";

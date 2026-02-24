@@ -3824,7 +3824,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Unlit/Color
+  - Legacy Shaders/Transparent/Diffuse
 --- !u!114 &114317805766014800
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3889,7 +3889,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Unlit/Color
+  - Legacy Shaders/Transparent/Diffuse
 --- !u!114 &114484983295121792
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3915,7 +3915,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Unlit/Color
+  - Legacy Shaders/Transparent/Diffuse
 --- !u!114 &114520929132202260
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4086,7 +4086,6 @@ MonoBehaviour:
   - {fileID: 108650374834249218}
   - {fileID: 108489240043674510}
   - {fileID: 108906149146186456}
-  _holdingButton: 0
 --- !u!114 &114775749989377302
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4125,7 +4124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Unlit/Color
+  - Legacy Shaders/Transparent/Diffuse
 --- !u!114 &114799100098757060
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4138,7 +4137,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Mobile/Diffuse
+  - KT/Mobile/DiffuseTint
 --- !u!114 &114799232791496788
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4151,7 +4150,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Unlit/Color
+  - Legacy Shaders/Transparent/Diffuse
 --- !u!114 &114800760153002832
 MonoBehaviour:
   m_ObjectHideFlags: 1

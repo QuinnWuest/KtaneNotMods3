@@ -35,16 +35,6 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
        { Colour.White, new Color32(255, 255, 255, 255) }
     };
 
-    private static readonly Dictionary<CubeFace, CubeFace> _oppositeDirection = new Dictionary<CubeFace, CubeFace>()
-    {
-        { CubeFace.TopFace, CubeFace.BottomFace },
-        { CubeFace.FrontFace, CubeFace.BackFace },
-        { CubeFace.RightFace, CubeFace.LeftFace},
-        { CubeFace.BackFace, CubeFace.FrontFace },
-        { CubeFace.LeftFace, CubeFace.RightFace},
-        { CubeFace.BottomFace, CubeFace.TopFace }
-    };
-
     private static readonly Cube[] _cubeDiagram = new Cube[30]
     {
         new Cube(new Coord(-1, -1, -2), new Colour[] { Colour.Green, Colour.Blue, Colour.Red, Colour.Yellow, Colour.White, Colour.Magenta } ),
