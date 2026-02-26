@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using Rnd = UnityEngine.Random;
+using System.Text.RegularExpressions;
 
 public partial class PerspecticolourFlashScript : MonoBehaviour
 {
@@ -12,7 +12,7 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
     public KMAudio Audio;
     public KMSelectable YesButton;
     public KMSelectable NoButton;
-    public GameObject BackgroundObj;
+    public GameObject ModuleObj;
     private readonly KMSelectable[] ButtonSels = new KMSelectable[2];
 
     public TextMesh ScreenText;
@@ -85,18 +85,23 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
             ButtonSels[i].OnInteractEnded += ButtonRelease(i);
         }
 
-        _currentCubes = Enumerable.Range(0, _cubeDiagram.Length).ToArray().Shuffle().Take(2).Select(c => _cubeDiagram[c]).ToArray();
-
-        Debug.LogFormat("[Perspecticolour Flash #{0}] Faces are ordered: Top, Front, Right, Back, Left, Bottom.", _moduleId);
-        Debug.LogFormat("[Perspecticolour Flash #{0}] Word cube: {1}", _moduleId, _currentCubes[0]);
-        Debug.LogFormat("[Perspecticolour Flash #{0}] Colour cube: {1}", _moduleId, _currentCubes[1]);
-
-        _diagramOrientation = Orientation.RandomOrientation();
-
         _cubeByCoord = new Dictionary<Coord, Cube>();
         for (int i = 0; i < _cubeDiagram.Length; i++)
             _cubeByCoord[_cubeDiagram[i].Coord] = _cubeDiagram[i];
 
+        while (true)
+        {
+            _currentCubes = Enumerable.Range(0, _cubeDiagram.Length).ToArray().Shuffle().Take(2).Select(c => _cubeDiagram[c]).ToArray();
+            _diagramOrientation = Orientation.RandomOrientation();
+
+            var path = FindPath(new CubePosState(_currentCubes[0].Coord, _currentCubes[1].Coord));
+            if (path.Count >= 3 && path.Count <= 8)
+                break;
+        }
+
+        Debug.LogFormat("[Perspecticolour Flash #{0}] Word cube: {1}", _moduleId, _currentCubes[0].ToOrientedString(_diagramOrientation));
+        Debug.LogFormat("[Perspecticolour Flash #{0}] Colour cube: {1}", _moduleId, _currentCubes[1].ToOrientedString(_diagramOrientation));
+        Debug.LogFormat("[Perspecticolour Flash #{0}] (Face colors are ordered: Top, Front, Right, Back, Left, Bottom.)", _moduleId);
         Debug.LogFormat("[Perspecticolour Flash #{0}] The active cube is the {1} cube.", _moduleId, new[] { "Word", "Colour" }[GetActiveCubeIndex(_currentCubes[0], _currentCubes[1])]);
     }
 
@@ -104,7 +109,8 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
     {
         if (_moduleSolved)
             return;
-        var modUp = BackgroundObj.transform.up;
+
+        var modUp = ModuleObj.transform.up;
         var cam = Camera.main.transform;
 
         var upDot = Vector3.Dot(modUp, cam.up);
@@ -113,7 +119,6 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
         var absRight = Mathf.Abs(rightDot);
 
         var threshold = 0.45f;
-
         CubeFace faceCurrentlyViewing = CubeFace.TopFace;
         if (absUp > absRight && absUp >= threshold)
             faceCurrentlyViewing = upDot > 0 ? CubeFace.FrontFace : CubeFace.BackFace;
@@ -143,10 +148,7 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
             if (_moduleSolved)
                 return false;
 
-            bool isPush = btn == 1;
-
-            AttemptMove(isPush);
-
+            AttemptMove(ButtonSels[btn] == YesButton);
             return false;
         };
     }
@@ -176,29 +178,28 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
 
     private void AttemptMove(bool isPush)
     {
-        int active = GetActiveCubeIndex(_currentCubes[0], _currentCubes[1]);
-        var viewFace = _faceCurrentlyViewing;
-        var dir = _diagramOrientation.MapFace(viewFace);
-        if (!isPush)
-            dir = OppositeFace(dir);
+        var cur = new CubePosState(_currentCubes[0].Coord, _currentCubes[1].Coord);
 
-        var delta = DeltaForFace(dir);
-        var destination = Add(_currentCubes[active].Coord, delta);
+        CubePosState next;
+        int active;
+        CubeFace dir;
+        Coord from, dest;
 
-        Cube next;
-        if (!_cubeByCoord.TryGetValue(destination, out next))
+        if (!TryApplyMove(cur, _faceCurrentlyViewing, isPush, out next, out active, out dir, out from, out dest))
         {
-            Debug.LogFormat("[Perspecticolour Flash #{0}] Attempted to move the active cube from {2} to {3}. Strike.", _moduleId, dir, _currentCubes[active].Coord, destination);
+            Debug.LogFormat("[Perspecticolour Flash #{0}] Attempted to move the active cube from {1} to {2}. Strike.",
+                _moduleId, from, dest);
             Module.HandleStrike();
             return;
         }
 
-        Debug.LogFormat("[Perspecticolour Flash #{0}] Moved the {1} Cube to: {2}.", _moduleId, active == 0 ? "Word" : "Colour", _currentCubes[active]);
-        
+        _currentCubes[0] = _cubeByCoord[next.A];
+        _currentCubes[1] = _cubeByCoord[next.B];
 
-        _currentCubes[active] = next;
         int newActive = GetActiveCubeIndex(_currentCubes[0], _currentCubes[1]);
+        Debug.LogFormat("[Perspecticolour Flash #{0}] Moved the {1} Cube to: {2}.", _moduleId, active == 0 ? "Word" : "Colour", _currentCubes[active].ToOrientedString(_diagramOrientation));
         Debug.LogFormat("[Perspecticolour Flash #{0}] The active cube is now the {1} cube.", _moduleId, new[] { "Word", "Colour" }[newActive]);
+
         UpdateScreen();
 
         if (_currentCubes[0].IsEqualCoord(_currentCubes[1]))
@@ -207,6 +208,34 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
             _moduleSolved = true;
             Module.HandlePass();
         }
+    }
+
+    private bool TryMove(CubePosState s, CubeFace viewFace, bool isPush, out CubePosState next)
+    {
+        int active;
+        CubeFace dir;
+        Coord from, dest;
+        return TryApplyMove(s, viewFace, isPush, out next, out active, out dir, out from, out dest);
+    }
+
+    private bool TryApplyMove(CubePosState s, CubeFace viewFace, bool isPush, out CubePosState next, out int active, out CubeFace dir, out Coord from, out Coord dest)
+    {
+        next = s;
+        active = GetActiveCubeIndex(s);
+        from = (active == 0) ? s.A : s.B;
+        dir = _diagramOrientation.MapFace(viewFace);
+
+        if (isPush)
+            dir = OppositeFace(dir);
+
+        var to = DeltaForFace(dir);
+        dest = new Coord(from.X + to.X, from.Y + to.Y, from.Z + to.Z);
+
+        if (!_cubeByCoord.ContainsKey(dest))
+            return false;
+
+        next = (active == 0) ? new CubePosState(dest, s.B) : new CubePosState(s.A, dest);
+        return true;
     }
 
     private int GetActiveCubeIndex(Cube a, Cube b)
@@ -266,21 +295,239 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
         }
     }
 
-    private static Coord Add(Coord a, Coord b)
-    {
-        return new Coord(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
-    }
-
 #pragma warning disable 0414
-    private readonly string TwitchHelpMessage = "!{0} command";
+    private readonly string TwitchHelpMessage = "!{0} yes front [Press the 'yes' button when the module is tilted to view the front face.] | Commands can be chained with commas or semicolons. | Buttons and faces can be shortened to their first letter.";
 #pragma warning restore 0414
+
+    struct TpCommand
+    {
+        public KMSelectable Button;
+        public CubeFace Face;
+
+        public TpCommand(KMSelectable button, CubeFace face)
+        {
+            Button = button;
+            Face = face;
+        }
+    }
 
     private IEnumerator ProcessTwitchCommand(string command)
     {
+        command = Regex.Replace(command.Trim().ToLowerInvariant(), @"^\s+", " ");
+        var cmds = command.Split(new[] { ',', ';' });
+
+        var tpCmds = new List<TpCommand>();
+        foreach (var cmd in cmds)
+        {
+            var m = Regex.Match(cmd, @"^\s*(?<btn>(yes|y|no|n))\s+(?<face>(top|t|front|f|right|r|back|b|left|l))\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!m.Success)
+                yield break;
+            tpCmds.Add(new TpCommand
+            (
+                ButtonSels["yn".IndexOf(m.Groups["btn"].Value[0])],
+                (CubeFace)"tfrbl".IndexOf(m.Groups["face"].Value[0])
+            ));
+        }
+        yield return null;
+        foreach (var tpcmd in tpCmds)
+            yield return ExecuteTpCommand(tpcmd);
         yield break;
     }
+
+    private IEnumerator ExecuteTpCommand(TpCommand command)
+    {
+        if (command.Face != CubeFace.TopFace)
+            yield return TiltModule(command.Face);
+        yield return new WaitForSeconds(0.1f);
+        yield return PressButton(command.Button);
+        yield return new WaitForSeconds(0.1f);
+        if (command.Face != CubeFace.TopFace)
+            yield return TiltModule(CubeFace.TopFace);
+    }
+
+    private IEnumerator PressButton(KMSelectable button)
+    {
+        button.OnInteract();
+        yield return new WaitForSeconds(0.1f);
+        button.OnInteractEnded();
+    }
+
+    private static readonly Dictionary<CubeFace, Vector3> _rotations = new Dictionary<CubeFace, Vector3>
+    {
+        { CubeFace.TopFace, new Vector3(0, 0, 0) },
+        { CubeFace.FrontFace, new Vector3(60, 0, 0) },
+        { CubeFace.RightFace, new Vector3(0, 0, 60) },
+        { CubeFace.BackFace, new Vector3(-60, 0, 0) },
+        { CubeFace.LeftFace, new Vector3(0, 0, -60) }
+    };
+
+    private IEnumerator TiltModule(CubeFace cubeFace)
+    {
+        var rotStart = ModuleObj.transform.localEulerAngles;
+        var rotEnd = _rotations[cubeFace];
+
+        if (rotStart.x - rotEnd.x > 180f)
+            rotEnd.x += 360f;
+        if (rotEnd.x - rotStart.x > 180f)
+            rotStart.x += 360f;
+        if (rotStart.z - rotEnd.z > 180f)
+            rotEnd.z += 360f;
+        if (rotEnd.z - rotStart.z > 180f)
+            rotStart.z += 360f;
+        var duration = 0.5f;
+        var elapsed = 0f;
+        while (elapsed < duration)
+        {
+            ModuleObj.transform.localEulerAngles = new Vector3(Easing.InOutQuad(elapsed, rotStart.x, rotEnd.x, duration), 0, Easing.InOutQuad(elapsed, rotStart.z, rotEnd.z, duration));
+            yield return null;
+            elapsed += Time.deltaTime;
+        }
+        ModuleObj.transform.localEulerAngles = new Vector3(rotEnd.x, 0, rotEnd.z);
+    }
+
     private IEnumerator TwitchHandleForcedSolve()
     {
+        while (!_moduleSolved)
+        {
+            var start = new CubePosState(_currentCubes[0].Coord, _currentCubes[1].Coord);
+            var path = FindPath(start);
+
+            if (path == null || path.Count == 0)
+                throw new InvalidOperationException("Failed to find a path in autosolver.");
+
+            for (int i = 0; i < path.Count; i++)
+            {
+                var button = path[i].IsPush ? YesButton : NoButton;
+                yield return ExecuteTpCommand(new TpCommand(button, path[i].ViewFace));
+            }
+        }
         yield break;
+
+    }
+
+    public struct CubePosState : IEquatable<CubePosState>
+    {
+        public Coord A;
+        public Coord B;
+
+        public CubePosState(Coord a, Coord b)
+        {
+            A = a;
+            B = b;
+        }
+
+        public bool Equals(CubePosState other)
+        {
+            return other.A.Equals(A) && other.B.Equals(B);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is CubePosState && Equals((CubePosState)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int h = 17;
+                h = h * 31 + A.GetHashCode();
+                h = h * 31 + B.GetHashCode();
+                return h;
+            }
+        }
+
+        public bool IsMatched()
+        {
+            return A.Equals(B);
+        }
+    }
+
+    public struct Move
+    {
+        public CubeFace ViewFace;
+        public bool IsPush;
+
+        public Move(CubeFace viewFace, bool isPush)
+        {
+            ViewFace = viewFace;
+            IsPush = isPush;
+        }
+    }
+
+    private int GetActiveCubeIndex(CubePosState s)
+    {
+        Cube a = _cubeByCoord[s.A];
+        Cube b = _cubeByCoord[s.B];
+
+        CubeFace bottom = _diagramOrientation.MapFace(CubeFace.BottomFace);
+
+        bool aRgb = IsRgb(a.GetColourFromFace(bottom));
+        bool bRgb = IsRgb(b.GetColourFromFace(bottom));
+
+        return (aRgb == bRgb) ? 0 : 1;
+    }
+
+    public struct ParentInfo
+    {
+        public CubePosState Parent;
+        public Move Move;
+
+        public ParentInfo(CubePosState parent, Move move)
+        {
+            Parent = parent;
+            Move = move;
+        }
+    }
+
+    private List<Move> FindPath(CubePosState start)
+    {
+        var q = new Queue<CubePosState>();
+        var parent = new Dictionary<CubePosState, ParentInfo>();
+
+        q.Enqueue(start);
+        parent[start] = new ParentInfo(start, new Move(CubeFace.TopFace, true));
+
+        while (q.Count > 0)
+        {
+            var qi = q.Dequeue();
+            if (qi.IsMatched())
+                return ReconstructPath(start, qi, parent);
+
+            var faces = Enumerable.Range(0, 5).Select(i => (CubeFace)i).ToArray();
+            for (int i = 0; i < faces.Length; i++)
+            {
+                var vf = faces[i];
+                for (int j = 0; j < 2; j++)
+                {
+                    bool isPush = j == 0;
+                    CubePosState next;
+                    if (!TryMove(qi, vf, isPush, out next))
+                        continue;
+                    if (parent.ContainsKey(next))
+                        continue;
+
+                    parent[next] = new ParentInfo(qi, new Move(vf, isPush));
+                    q.Enqueue(next);
+                }
+            }
+        }
+        return new List<Move>();
+    }
+
+    private List<Move> ReconstructPath(CubePosState start, CubePosState goal, Dictionary<CubePosState, ParentInfo> parent)
+    {
+        List<Move> rev = new List<Move>();
+        CubePosState cur = goal;
+
+        while (!cur.Equals(start))
+        {
+            ParentInfo pi = parent[cur];
+            rev.Add(pi.Move);
+            cur = pi.Parent;
+        }
+
+        rev.Reverse();
+        return rev;
     }
 }
